@@ -5,3 +5,6 @@ debug
 Win32
 tdlib
 lib
+TdTest
+*.log
+*.o
