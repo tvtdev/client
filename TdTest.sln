@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TdTest", "TdTest.vcxproj", "{4F9ED2DA-5FCD-39D0-A0D2-9937BB061931}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LoopLog", "C:\Users\admin\Desktop\LoopLog\LoopLog\LoopLog.vcxproj", "{04204AA2-1F66-3C23-A007-FED1494871EA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4F9ED2DA-5FCD-39D0-A0D2-9937BB061931}.Debug|x64.ActiveCfg = Debug|Win32
+		{4F9ED2DA-5FCD-39D0-A0D2-9937BB061931}.Debug|x86.ActiveCfg = Debug|Win32
+		{4F9ED2DA-5FCD-39D0-A0D2-9937BB061931}.Debug|x86.Build.0 = Debug|Win32
+		{4F9ED2DA-5FCD-39D0-A0D2-9937BB061931}.Release|x64.ActiveCfg = Release|Win32
+		{4F9ED2DA-5FCD-39D0-A0D2-9937BB061931}.Release|x86.ActiveCfg = Release|Win32
+		{4F9ED2DA-5FCD-39D0-A0D2-9937BB061931}.Release|x86.Build.0 = Release|Win32
+		{04204AA2-1F66-3C23-A007-FED1494871EA}.Debug|x64.ActiveCfg = Debug|x64
+		{04204AA2-1F66-3C23-A007-FED1494871EA}.Debug|x64.Build.0 = Debug|x64
+		{04204AA2-1F66-3C23-A007-FED1494871EA}.Debug|x86.ActiveCfg = Debug|x64
+		{04204AA2-1F66-3C23-A007-FED1494871EA}.Release|x64.ActiveCfg = Release|x64
+		{04204AA2-1F66-3C23-A007-FED1494871EA}.Release|x64.Build.0 = Release|x64
+		{04204AA2-1F66-3C23-A007-FED1494871EA}.Release|x86.ActiveCfg = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E930EE8E-5E9E-4081-8F11-49C43553DE92}
+	EndGlobalSection
+EndGlobal
