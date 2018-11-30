@@ -105,102 +105,55 @@ void TdClient::update()
 
 void TdClient::update_send()
 {
-	QMap<QString, int>     m_logMap;
-//	std::cout << "update_send..." << std::endl;
 
-
-
-	QDir dir(QCoreApplication::applicationDirPath() + "/msg/");
-	dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
-
-	dir.setSorting(QDir::Size | QDir::Reversed);
-	QFileInfoList list = dir.entryInfoList();
-
-
-//	std::cout << "     Bytes Filename" << std::endl;
-
-QString finsstr =  " from:TsnosVfv";
-	for (int i = 0; i < list.size(); ++i) 
-	{
-		QFileInfo fileInfo = list.at(i);
-	
-		QString fileName = QString("%1").arg(fileInfo.fileName());;
-
-		QFile fileObj(QCoreApplication::applicationDirPath() + "/msg/" + fileName);
+		QFile fileObj(QCoreApplication::applicationDirPath() + "/chart" );
 		fileObj.open(QIODevice::ReadOnly);
 		QByteArray fileDataTemp = fileObj.readAll();
 		QString fileData(fileDataTemp);
 
 		QStringList temp = fileData.split("\r\n");
-		std::int64_t chat_id = fileName.toLong();	
-		if (temp.size() >90)
-		{	
-			QString textstr;
-			QString temptext = temp.at(63);
-			int fpos = 0;
-			for (size_t i = 50; i < temp.size(); i++)
-			{
-				temptext = temp.at(i);
-				fpos = temptext.indexOf("from:");
-				if (fpos != -1)
-				{
-					int p = temptext.indexOf("] [", fpos);
-					textstr = temptext.mid(p + 3, temptext.length() - p - 4);
-
-					if (textstr.length()<300)
-					{
-						break;
-					}
-				}
-			}
+	
 
 
-
-			for (size_t i = 0; i < 88; i++)
-			{
-				temptext = temp.at(i);
-				fpos = temptext.indexOf(finsstr);
-				if (fpos != -1)
-				{
-					return;
-				}
-			}
-
-			std::string text = textstr.toStdString();
-			
-
-			std::cerr << "Sending message to chat " << chat_id << "..." << std::endl;
-			auto send_message = td_api::make_object<td_api::sendMessage>();
-			send_message->chat_id_ = chat_id;
-			auto message_content = td_api::make_object<td_api::inputMessageText>();
-			message_content->text_ = td_api::make_object<td_api::formattedText>();
-			message_content->text_->text_ = std::move(text);
-			send_message->input_message_content_ = std::move(message_content);
-			send_query(std::move(send_message), {});
-
-			LogOut::GetInstance()->setMaxLine(70);
-			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msg/" + fileName);
-			LogOut::GetInstance()->printLog(finsstr + finsstr );
-		}
-
-		if (temp.size() < 2)
+		for (size_t i = 0; i < temp.size(); i++)
 		{
+			QString temptext = temp.at(i);
+			std::string joinLink = temptext.toStdString();
+			std::cerr << "Join group..." << joinLink<<std::endl;
 
-			std::string text = "hello all.";
-			std::cerr << "Sending message to chat " << chat_id << "..." << std::endl;
-			auto send_message = td_api::make_object<td_api::sendMessage>();
-			send_message->chat_id_ = chat_id;
-			auto message_content = td_api::make_object<td_api::inputMessageText>();
-			message_content->text_ = td_api::make_object<td_api::formattedText>();
-			message_content->text_->text_ = std::move(text);
-			send_message->input_message_content_ = std::move(message_content);
-			send_query(std::move(send_message), {});
+			if (joinLink.find("joinchat") == std::string::npos)
+			{
+				send_query(td_api::make_object<td_api::searchPublicChat>(joinLink), [this](Object object) {
+					if (object->get_id() == td_api::error::ID) {
+						auto error = td::move_tl_object_as<td_api::error>(object);
+						std::cerr << error->message_;
+						return;
+					}
+					auto chat = td::move_tl_object_as<td_api::chat>(object);
+					std::cerr << "[id:" << chat->id_ << "] [title:" << chat->title_ << "]" << std::endl;
+					send_query(td_api::make_object<td_api::joinChat>(chat->id_), [this](Object object) {
+						if (object->get_id() == td_api::error::ID) {
+							auto error = td::move_tl_object_as<td_api::error>(object);
+							std::cerr << error->message_;
+							return;
+						}
+						std::cerr << "join success.";
+						send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20), [this](Object object) {																											if (object->get_id() == td_api::error::ID) {
+							return;
+						}
+						auto chats = td::move_tl_object_as<td_api::chats>(object);
+						for (auto chat_id : chats->chat_ids_) {
+							std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
+						}
+						});
+					});
 
-			LogOut::GetInstance()->setMaxLine(70);
-			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msg/" + fileName);
-			LogOut::GetInstance()->printLog("from:T Vv from:T Vv");
+				});
+			}
 		}
-	}
+
+			
+		
 }
 
 
