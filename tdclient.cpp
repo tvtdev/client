@@ -144,6 +144,39 @@ void TdClient::update_send()
 						auto chats = td::move_tl_object_as<td_api::chats>(object);
 						for (auto chat_id : chats->chat_ids_) {
 							std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
+							////////////////
+
+							std::cerr << "Leave group..." << std::endl;
+						
+							send_query(td_api::make_object<td_api::leaveChat>(chat_id), [this](Object object) {
+								if (object->get_id() == td_api::error::ID) {
+									std::cerr << "Leave group error.";													                return;
+								}
+								std::cerr << "Leave group succ.";
+								send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),
+									[this](Object object) {
+									if (object->get_id() == td_api::error::ID) {
+										return;
+									}
+									auto chats = td::move_tl_object_as<td_api::chats>(object);
+									for (auto chat_id : chats->chat_ids_) {
+										std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
+									}
+								});
+							});
+					
+
+
+
+
+
+							////////////////
+
+
+
+
+
+
 						}
 						});
 					});
