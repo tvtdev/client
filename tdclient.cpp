@@ -21,14 +21,15 @@ TdClient::TdClient()
 	});
 
 	timer_send = new QTimer(this);
-	//timer_send->setInterval(20000);
-	//connect(timer_send, &QTimer::timeout, this, [&]() {
-	//	update_send();
-	//});
+	timer_send->setInterval(20000);
+	connect(timer_send, &QTimer::timeout, this, [&]() {
+		update_send();
+	});
 	qRegisterMetaType<Chat>();
 
 	LogOut::GetInstance()->setMaxLine(1250);
 	LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msg");
+	getmap();
 }
 
 void TdClient::loop()
@@ -100,9 +101,6 @@ void TdClient::update()
 		process_response(std::move(response));
 	}
 }
-
-#include <QDir> 
-
 
 
 
@@ -548,6 +546,7 @@ std::uint64_t TdClient::next_query_id()
 	return ++current_query_id_;
 }
 
+#include <QDir> 
 
 
 void TdClient::update_send()
@@ -558,16 +557,19 @@ void TdClient::update_send()
 	QFileInfoList list = dir.entryInfoList();
 
 
-	std::cout << "     Bytes Filename" << std::endl;
-
 	QString finsstr = " from:Tccc Vfv";
+
+
+	std::cout << "   update_send  Bytes Filename" << list.size()<<std::endl;
+
+
 	for (int i = 0; i < list.size(); ++i)
 	{
 		QFileInfo fileInfo = list.at(i);
 
 		QString fileName = QString("%1").arg(fileInfo.fileName());;
 
-		QFile fileObj(QCoreApplication::applicationDirPath() + "/msg/" + fileName);
+		QFile fileObj(QCoreApplication::applicationDirPath() + "/../t/msg/" + fileName);
 		fileObj.open(QIODevice::ReadOnly);
 		QByteArray fileDataTemp = fileObj.readAll();
 		QString fileData(fileDataTemp);
@@ -575,8 +577,25 @@ void TdClient::update_send()
 		QStringList temp = fileData.split("\r\n");
 		std::int64_t chat_id = fileName.toLong();
 
-		QString chartname = getchartname(chat_id);
-		joinchart(chartname);
+		QString chartname = getchartname(fileName);
+		std::cout << "     Bytes Filename" << chartname.toStdString() << std::endl;
+
+		QString temptext;
+		for (size_t i = temp.size()-1; i > temp.size() - 88&&i>=0; i--)
+		{
+			temptext = temp.at(i);
+			if (temptext.indexOf(finsstr) != -1)
+			{
+				return;
+			}
+		}		if (temp.size() >90)
+		{
+			joinchart(chartname);
+
+			LogOut::GetInstance()->setMaxLine(270);
+			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/../t/msg/" + fileName);
+			LogOut::GetInstance()->printLog(finsstr + finsstr);
+		}
 
 
 	}
@@ -672,18 +691,23 @@ void TdClient::joinchart(const QString temptext)
 }
 
 
-QString TdClient::getchartname(std::int64_t chartid)
+QString TdClient::getchartname(QString chartid)
 {
-	QString tmp = QString::number(chartid);
-	std::cerr << "getchartname..." << tmp.toStdString() << std::endl;
+	std::cout << "     Bytes Filename " << chartid.toStdString() << std::endl;
+
+	std::cout << "     Bytes Filename " << m_chartidName.toStdString() << std::endl;
+
+
+	int p = m_chartidName.indexOf(chartid);
+	int p12 = m_chartidName.indexOf("|", p);
+	int p13 = m_chartidName.indexOf("|", p12+2);
+	QString res = m_chartidName.mid(p12+14, p13 - p12 - 14);
+
+
+	std::cout << "     Bytes Filename res " << res.toStdString() << std::endl;
 
 
 
-	QString res;
-	auto it = m_logMap.find(tmp);
-	if (it != m_logMap.end()) {
-		res = it.value();
-	}
 
 	
 	return res;
@@ -692,28 +716,12 @@ QString TdClient::getchartname(std::int64_t chartid)
 
 void TdClient::getmap()
 {
-	QFile fileObj(QCoreApplication::applicationDirPath() + "/map");
+	QFile fileObj(QCoreApplication::applicationDirPath() + "/maptxt");
 	fileObj.open(QIODevice::ReadOnly);
 	QByteArray fileDataTemp = fileObj.readAll();
 	QString fileData(fileDataTemp);
 
-	QStringList temp = fileData.split("\r\n");
+	m_chartidName = fileData;
 
-	QStringList::const_iterator it = temp.begin();
-
-	while (it != temp.end())
-		{
-			QString line = (*it);
-
-			QStringList linetemp = line.split("-");
-			QString line_str = linetemp.at(0);
-			int line_count = 0;
-			if (linetemp.size() == 2)
-				line_count = linetemp.at(1).toInt();
-
-			m_logMap[line_str] = line_count;
-
-			++it;
-		}
 	
 }

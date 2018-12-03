@@ -102,9 +102,8 @@ private:
 private:
 	void update_send();
 	void joinchart(const QString temptext);
-	QString getchartname(std::int64_t);
+	QString getchartname(QString chartid);
 	void getmap();
 
-
-	QMap<QString,QString>     m_logMap;
+	QString  m_chartidName;
 };
