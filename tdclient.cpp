@@ -13,7 +13,7 @@ TdClient::TdClient()
 		"172.105.196.90", 1984, true,
 		td::td_api::object_ptr<td::td_api::ProxyType>(
 			new td::td_api::proxyTypeMtproto("c4127cc0eb363cb4b7b35e6deb5674e8")))),
-		{});
+			{});
 	timer = new QTimer(this);
 	timer->setInterval(1000);
 	connect(timer, &QTimer::timeout, this, [&]() {
@@ -21,10 +21,10 @@ TdClient::TdClient()
 	});
 
 	timer_send = new QTimer(this);
-	timer_send->setInterval(20000);
-	connect(timer_send, &QTimer::timeout, this, [&]() {
-		update_send();
-	});
+	//timer_send->setInterval(20000);
+	//connect(timer_send, &QTimer::timeout, this, [&]() {
+	//	update_send();
+	//});
 	qRegisterMetaType<Chat>();
 
 	LogOut::GetInstance()->setMaxLine(1250);
@@ -105,218 +105,120 @@ void TdClient::update()
 
 
 
-#include <QDir> 
-
-void TdClient::update_send()
-{
-	QMap<QString, int>     m_logMap;
-	//	std::cout << "update_send..." << std::endl;
-
-
-
-	QDir dir(QCoreApplication::applicationDirPath() + "/msg/");
-	dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
-
-	dir.setSorting(QDir::Size | QDir::Reversed);
-	QFileInfoList list = dir.entryInfoList();
-
-
-
-	QString finsstr = " from-----------:Tfdonmfv";
-	for (int i = 0; i < list.size(); ++i)
-	{
-		QFileInfo fileInfo = list.at(i);
-
-		QString fileName = QString("%1").arg(fileInfo.fileName());;
-
-		QFile fileObj(QCoreApplication::applicationDirPath() + "/msg/" + fileName);
-		fileObj.open(QIODevice::ReadOnly);
-		QByteArray fileDataTemp = fileObj.readAll();
-		QString fileData(fileDataTemp);
-
-		QStringList temp = fileData.split("\r\n");
-		std::int64_t chat_id = fileName.toLong();
-		if (temp.size() >90)
-		{
-			QString textstr;
-			QString temptext = temp.at(63);
-			int fpos = 0;
-			for (size_t i = 50; i < temp.size(); i++)
-			{
-				temptext = temp.at(i);
-				fpos = temptext.indexOf("from:");
-				if (fpos != -1)
-				{
-					int p = temptext.indexOf("] [", fpos);
-					textstr = temptext.mid(p + 3, temptext.length() - p - 4);
-					if (textstr.length()<300)
-					{
-						break;
-					}
-				}
-			}
-
-
-
-			for (size_t i = temp.size(); i > temp.size()-88; i--)
-			{
-				temptext = temp.at(i);
-				fpos = temptext.indexOf(finsstr);
-				if (fpos != -1)
-				{
-					return;
-				}
-			}
-
-			std::string text = textstr.toStdString();
-
-
-			std::cerr << "Sending message to chat " << chat_id << "..." << std::endl;
-			auto send_message = td_api::make_object<td_api::sendMessage>();
-			send_message->chat_id_ = chat_id;
-			auto message_content = td_api::make_object<td_api::inputMessageText>();
-			message_content->text_ = td_api::make_object<td_api::formattedText>();
-			message_content->text_->text_ = std::move(text);
-			send_message->input_message_content_ = std::move(message_content);
-			send_query(std::move(send_message), {});
-
-			LogOut::GetInstance()->setMaxLine(270);
-			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msg/" + fileName);
-			LogOut::GetInstance()->printLog(finsstr + finsstr);
-		}
-
-		if (temp.size() < 2)
-		{
-
-			std::string text = "hello all.";
-			std::cerr << "Sending message to chat " << chat_id << "..." << std::endl;
-			auto send_message = td_api::make_object<td_api::sendMessage>();
-			send_message->chat_id_ = chat_id;
-			auto message_content = td_api::make_object<td_api::inputMessageText>();
-			message_content->text_ = td_api::make_object<td_api::formattedText>();
-			message_content->text_->text_ = std::move(text);
-			send_message->input_message_content_ = std::move(message_content);
-			send_query(std::move(send_message), {});
-
-			LogOut::GetInstance()->setMaxLine(270);
-			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msg/" + fileName);
-			LogOut::GetInstance()->printLog(finsstr + finsstr);
-		}
-	}
-}
-
 
 void TdClient::authorize()
 {
-    process_response(client_->receive(10));
+	process_response(client_->receive(10));
 }
 
 void TdClient::getUserInput()
 {
-	    std::cerr << "Enter action [q] quit [u] check for updates and request results [c] show chats [m <id> <text>] "
-		            "send message [j <group invite link>] join group [g <id>] leave group [l] logout: "
-			            << std::endl;
-	        std::string line;
-		    std::getline(std::cin, line);
-		        std::istringstream ss(line);
-			    std::string action;
-			        ss >> action;
-				    if (action == "q") {
-					            return;
-						        }
-				        if (action == "u") {
-						        std::cerr << "Checking for updates..." << std::endl;
-							        while (true) {
-									            auto response = client_->receive(0);
-										                if (response.object) {
-													                process_response(std::move(response));
-															            }
-												            else {
-														                    break;
-																                }
-													            }
-								    }
-					    else if (action == "l") {
-						            std::cerr << "Logging out..." << std::endl;
-							            send_query(td_api::make_object<td_api::logOut>(), {});
-								        }
-					        else if (action == "m") {
-							        std::int64_t chat_id;
-								        ss >> chat_id;
-									        ss.get();
-										        std::string text;
-											        std::getline(ss, text);
+	std::cerr << "Enter action [q] quit [u] check for updates and request results [c] show chats [m <id> <text>] "
+		"send message [j <group invite link>] join group [g <id>] leave group [l] logout: "
+		<< std::endl;
+	std::string line;
+	std::getline(std::cin, line);
+	std::istringstream ss(line);
+	std::string action;
+	ss >> action;
+	if (action == "q") {
+		return;
+	}
+	if (action == "u") {
+		std::cerr << "Checking for updates..." << std::endl;
+		while (true) {
+			auto response = client_->receive(0);
+			if (response.object) {
+				process_response(std::move(response));
+			}
+			else {
+				break;
+			}
+		}
+	}
+	else if (action == "l") {
+		std::cerr << "Logging out..." << std::endl;
+		send_query(td_api::make_object<td_api::logOut>(), {});
+	}
+	else if (action == "m") {
+		std::int64_t chat_id;
+		ss >> chat_id;
+		ss.get();
+		std::string text;
+		std::getline(ss, text);
 
-												        std::cerr << "Sending message to chat " << chat_id << "..." << std::endl;
-													        auto send_message = td_api::make_object<td_api::sendMessage>();
-														        send_message->chat_id_ = chat_id;
-															        auto message_content = td_api::make_object<td_api::inputMessageText>();
-																        message_content->text_ = td_api::make_object<td_api::formattedText>();
-																	        message_content->text_->text_ = std::move(text);
-																		        send_message->input_message_content_ = std::move(message_content);
+		std::cerr << "Sending message to chat " << chat_id << "..." << std::endl;
+		auto send_message = td_api::make_object<td_api::sendMessage>();
+		send_message->chat_id_ = chat_id;
+		auto message_content = td_api::make_object<td_api::inputMessageText>();
+		message_content->text_ = td_api::make_object<td_api::formattedText>();
+		message_content->text_->text_ = std::move(text);
+		send_message->input_message_content_ = std::move(message_content);
 
-																			        send_query(std::move(send_message), {});
-																				    }
-						    else if (action == "c") {
-							            std::cerr << "Loading chat list..." << std::endl;
-								            send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),
-											                [this](Object object) {
-													            if (object->get_id() == td_api::error::ID) {
-														                    return;
-																                }
-																		            auto chats = td::move_tl_object_as<td_api::chats>(object);
-																			                for (auto chat_id : chats->chat_ids_) {
-																					                std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
-																							            }
-																								            });
-									        }
-						        else if (action == "j"){
-								        std::cerr << "Join group..." << std::endl;
-									        std::string joinLink;
-										        std::getline(ss, joinLink);
-											        send_query(td_api::make_object<td_api::joinChatByInviteLink>(joinLink),[this](Object object) {
-														            if (object->get_id() == td_api::error::ID) {
-															                    return;
-																	                }
-																			std::cerr <<"join group succ.";
-																			            send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),
-																						                    [this](Object object) {
-																								                    if (object->get_id() == td_api::error::ID) {
-																										                        return;
-																													                }
-																															                auto chats = td::move_tl_object_as<td_api::chats>(object);
-																																	                for (auto chat_id : chats->chat_ids_) {
-																																			                    std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
-																																					                    }
-																																							                });
-																				            });
-												    }
-							    else if (action == "g"){
-								            std::cerr << "Leave group..." << std::endl;
-									            std::int64_t chat_id;
-										            ss >> chat_id;
-											            ss.get();
-												    std::cerr<<chat_id;
-												            send_query(td_api::make_object<td_api::leaveChat>(chat_id),[this](Object object) {
-															                if (object->get_id() == td_api::error::ID) {
-																	std::cerr<<"Leave group error.";													                return;
-																			            }
-																				    std::cerr <<"Leave group succ.";
-																				                send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),
-																								                [this](Object object) {
-																										                if (object->get_id() == td_api::error::ID) {
-																												                    return;
-																														                    }
-																																                    auto chats = td::move_tl_object_as<td_api::chats>(object);
-																																		                    for (auto chat_id : chats->chat_ids_) {
-																																				                        std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
-																																							                }
-																																									            });
-																						        });
-													        }
-							        /*QTimer::singleShot(1000,this,[&](){
-								 *         getUserInput();
-								 *             });*/
+		send_query(std::move(send_message), {});
+	}
+	else if (action == "c") {
+		std::cerr << "Loading chat list..." << std::endl;
+		send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),
+			[this](Object object) {
+			if (object->get_id() == td_api::error::ID) {
+				return;
+			}
+			auto chats = td::move_tl_object_as<td_api::chats>(object);
+			for (auto chat_id : chats->chat_ids_) {
+				std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
+			}
+		});
+	}
+	else if (action == "j") {
+	/*	update_send();
+		return;*/
+		std::cerr << "Join group..." << std::endl;
+		std::string joinLink;
+		std::getline(ss, joinLink);
+		send_query(td_api::make_object<td_api::joinChatByInviteLink>(joinLink), [this](Object object) {
+			if (object->get_id() == td_api::error::ID) {
+				return;
+			}
+			std::cerr << "join group succ.";
+			send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),
+				[this](Object object) {
+				if (object->get_id() == td_api::error::ID) {
+					return;
+				}
+				auto chats = td::move_tl_object_as<td_api::chats>(object);
+				for (auto chat_id : chats->chat_ids_) {
+					std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
+				}
+			});
+		});
+	}
+	else if (action == "g") {
+		std::cerr << "Leave group..." << std::endl;
+		std::int64_t chat_id;
+		ss >> chat_id;
+		ss.get();
+		std::cerr << chat_id;
+		send_query(td_api::make_object<td_api::leaveChat>(chat_id), [this](Object object) {
+			if (object->get_id() == td_api::error::ID) {
+				std::cerr << "Leave group error.";													                return;
+			}
+			std::cerr << "Leave group succ.";
+			send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),
+				[this](Object object) {
+				if (object->get_id() == td_api::error::ID) {
+					return;
+				}
+				auto chats = td::move_tl_object_as<td_api::chats>(object);
+				for (auto chat_id : chats->chat_ids_) {
+					std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
+				}
+			});
+		});
+	}
+	/*QTimer::singleShot(1000,this,[&](){
+	*         getUserInput();
+	*             });*/
 }
 
 void TdClient::execCommand(QString cmd)
@@ -375,45 +277,51 @@ void TdClient::execCommand(QString cmd)
 			}
 		});
 	}
-	else if (action == "j"){
+	else if (action == "j") {
+		update_send();
+		return;
 		std::cerr << "Join group..." << std::endl;
 		std::string joinLink;
 		ss >> joinLink;
-		if(joinLink.find("joinchat") == std::string::npos){
-			send_query(td_api::make_object<td_api::searchPublicChat>(joinLink),[this](Object object){
+		if (joinLink.find("joinchat") == std::string::npos) {
+			send_query(td_api::make_object<td_api::searchPublicChat>(joinLink), [this](Object object) {
 				if (object->get_id() == td_api::error::ID) {
-					 auto error = td::move_tl_object_as<td_api::error>(object);
-					 std::cerr<<error->message_;             
-					 return;	
-	  			}
+					auto error = td::move_tl_object_as<td_api::error>(object);
+					std::cerr << error->message_;
+					return;
+				}
 				auto chat = td::move_tl_object_as<td_api::chat>(object);
-				std::cerr << "[id:"<<chat->id_<<"] [title:"<<chat->title_<<"]"<<std::endl;
-				send_query(td_api::make_object<td_api::joinChat>(chat->id_),[this](Object object) {
-					if (object->get_id() == td_api::error::ID){
+				std::cerr << "[id:" << chat->id_ << "] [title:" << chat->title_ << "]" << std::endl;
+				send_query(td_api::make_object<td_api::joinChat>(chat->id_), [this](Object object) {
+					if (object->get_id() == td_api::error::ID) {
 						auto error = td::move_tl_object_as<td_api::error>(object);
-						std::cerr<<error->message_;
+						std::cerr << error->message_;
 						return;
 					}
-					std::cerr<<"join success.";
-					send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),[this](Object object) {																											if (object->get_id() == td_api::error::ID) {																																					return;
-																																															}
-						auto chats = td::move_tl_object_as<td_api::chats>(object);
-						for (auto chat_id : chats->chat_ids_) {	
-							std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
-						}
+					std::cerr << "join success.";
+					send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20), [this](Object object) {																											if (object->get_id() == td_api::error::ID) {
+						return;
+					}
+					auto chats = td::move_tl_object_as<td_api::chats>(object);
+					for (auto chat_id : chats->chat_ids_) {
+						std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
+					}
 					});
 				});
 
 			});
-		}else{
-			send_query(td_api::make_object<td_api::joinChatByInviteLink>(joinLink),[this](Object object) {
-				if (object->get_id() == td_api::error::ID){
-			       		auto error = td::move_tl_object_as<td_api::error>(object);
-					std::cerr<<error->message_;		    
+		}
+		else {
+			std::cerr << "Join group..joinChatByInviteLink." << std::endl;
+
+			send_query(td_api::make_object<td_api::joinChatByInviteLink>(joinLink), [this](Object object) {
+				if (object->get_id() == td_api::error::ID) {
+					auto error = td::move_tl_object_as<td_api::error>(object);
+					std::cerr << error->message_;
 					return;
 				}
-				std::cerr<<"join success.";
-				send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),[this](Object object) {
+				std::cerr << "join success.";
+				send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20), [this](Object object) {
 					if (object->get_id() == td_api::error::ID) {
 						return;
 					}
@@ -425,16 +333,16 @@ void TdClient::execCommand(QString cmd)
 			});
 		}
 	}
-	else if (action == "g"){
+	else if (action == "g") {
 		std::cerr << "Leave group..." << std::endl;
 		std::int64_t chat_id;
 		ss >> chat_id;
 		ss.get();
-		send_query(td_api::make_object<td_api::leaveChat>(chat_id),[this](Object object) {
+		send_query(td_api::make_object<td_api::leaveChat>(chat_id), [this](Object object) {
 			if (object->get_id() == td_api::error::ID) {
 				return;
 			}
-			send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),[this](Object object) {
+			send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20), [this](Object object) {
 				if (object->get_id() == td_api::error::ID) {
 					return;
 				}
@@ -518,7 +426,7 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 		if (update_new_message.message_->content_->get_id() == td_api::messageChatAddMembers::ID)
 		{
 			auto ids = static_cast<td_api::messageChatAddMembers &>(*update_new_message.message_->content_).member_user_ids_;
-			foreach (auto id, ids)
+			foreach(auto id, ids)
 			{
 				text += QString("%1,").arg(get_user_name(id).c_str()).toUtf8().data();
 			}
@@ -531,8 +439,8 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 		QString chart_text = QString::number(chat_id) + "] [from:" + sender_user_name.c_str() + "] [" + text.c_str() + "]";
 
 		if (chartid.indexOf("-") != -1 && text.find("add group") == -1)
-		{			
-			LogOut::GetInstance()->setMaxLine(270);
+		{
+			LogOut::GetInstance()->setMaxLine(970);
 			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msg/" + chartid);
 			LogOut::GetInstance()->printLog(chart_text);
 		}
@@ -574,13 +482,13 @@ void TdClient::on_authorization_state_update()
 	},
 		[this](td_api::authorizationStateWaitCode &wait_code) {
 		std::string first_name;
-		              std::string last_name;
-			                    if (!wait_code.is_registered_) {
-					                    std::cerr << "Enter your first name: ";
-							                    std::cin >> first_name;
-									                    std::cerr << "Enter your last name: ";
-											                    std::cin >> last_name;
-													                  }
+		std::string last_name;
+		if (!wait_code.is_registered_) {
+			std::cerr << "Enter your first name: ";
+			std::cin >> first_name;
+			std::cerr << "Enter your last name: ";
+			std::cin >> last_name;
+		}
 		std::cerr << "Enter authentication code: ";
 		std::string code;
 		std::cin >> code;
@@ -595,16 +503,16 @@ void TdClient::on_authorization_state_update()
 			create_authentication_query_handler());
 	},
 		[this](td_api::authorizationStateWaitPhoneNumber &) {
-			std::cerr << "Enter phone number: ";
-			              std::string phone_number;
-				                    std::cin >> phone_number;
+		std::cerr << "Enter phone number: ";
+		std::string phone_number;
+		std::cin >> phone_number;
 		send_query(td_api::make_object<td_api::setAuthenticationPhoneNumber>(
 			phone_number, false /*allow_flash_calls*/, false /*is_current_phone_number*/),
 			create_authentication_query_handler());
 	},
 		[this](td_api::authorizationStateWaitEncryptionKey &) {
-			send_query(td_api::make_object<td_api::checkDatabaseEncryptionKey>(std::move("123123")),
-				create_authentication_query_handler());
+		send_query(td_api::make_object<td_api::checkDatabaseEncryptionKey>(std::move("123123")),
+			create_authentication_query_handler());
 	},
 		[this](td_api::authorizationStateWaitTdlibParameters &) {
 		auto parameters = td_api::make_object<td_api::tdlibParameters>();
@@ -640,3 +548,172 @@ std::uint64_t TdClient::next_query_id()
 	return ++current_query_id_;
 }
 
+
+
+void TdClient::update_send()
+{
+	QDir dir(QCoreApplication::applicationDirPath() + "/../t/msg/");
+	dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
+	dir.setSorting(QDir::Size | QDir::Reversed);
+	QFileInfoList list = dir.entryInfoList();
+
+
+	std::cout << "     Bytes Filename" << std::endl;
+
+	QString finsstr = " from:Tccc Vfv";
+	for (int i = 0; i < list.size(); ++i)
+	{
+		QFileInfo fileInfo = list.at(i);
+
+		QString fileName = QString("%1").arg(fileInfo.fileName());;
+
+		QFile fileObj(QCoreApplication::applicationDirPath() + "/msg/" + fileName);
+		fileObj.open(QIODevice::ReadOnly);
+		QByteArray fileDataTemp = fileObj.readAll();
+		QString fileData(fileDataTemp);
+
+		QStringList temp = fileData.split("\r\n");
+		std::int64_t chat_id = fileName.toLong();
+
+		QString chartname = getchartname(chat_id);
+		joinchart(chartname);
+
+
+	}
+
+}
+
+
+void TdClient::joinchart(const QString temptext)
+{
+	std::string joinLink = temptext.toStdString();
+	std::cerr << "Join group..." << joinLink << std::endl;
+
+	if (joinLink.find("joinchat") == std::string::npos)
+	{
+		send_query(td_api::make_object<td_api::searchPublicChat>(joinLink), [this](Object object)
+		{
+			if (object->get_id() == td_api::error::ID) {
+				auto error = td::move_tl_object_as<td_api::error>(object);
+				std::cerr << error->message_;
+				return;
+			}
+			auto chat = td::move_tl_object_as<td_api::chat>(object);
+			std::cerr << "[id:" << chat->id_ << "] [title:" << chat->title_ << "]" << std::endl;
+			send_query(td_api::make_object<td_api::joinChat>(chat->id_), [this](Object object) {
+				if (object->get_id() == td_api::error::ID) {
+					auto error = td::move_tl_object_as<td_api::error>(object);
+					std::cerr << error->message_;
+					return;
+				}
+				std::cerr << "join success.";
+				send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20), [this](Object object) {																											if (object->get_id() == td_api::error::ID) {
+					return;
+				}
+				auto chats = td::move_tl_object_as<td_api::chats>(object);
+				for (auto chat_id : chats->chat_ids_) {
+					std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
+					////////////////
+
+					std::cerr << "Leave group..." << std::endl;
+
+					send_query(td_api::make_object<td_api::leaveChat>(chat_id), [this](Object object) {
+						if (object->get_id() == td_api::error::ID) {
+							std::cerr << "Leave group error.";													                return;
+						}
+						std::cerr << "Leave group succ.";
+						send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),
+							[this](Object object) {
+							if (object->get_id() == td_api::error::ID) {
+								return;
+							}
+							auto chats = td::move_tl_object_as<td_api::chats>(object);
+							for (auto chat_id : chats->chat_ids_) {
+								std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
+							}
+						});
+					});
+
+
+
+
+
+
+					////////////////
+
+				}
+				});
+			});
+
+		});
+	}
+	else
+	{
+		std::string joinLinkt = "t.me/" + joinLink;
+
+
+		send_query(td_api::make_object<td_api::joinChatByInviteLink>(joinLinkt), [this](Object object) {
+			if (object->get_id() == td_api::error::ID) {
+				return;
+			}
+			std::cerr << "join group succ.";
+			send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),
+				[this](Object object) {
+				if (object->get_id() == td_api::error::ID) {
+					return;
+				}
+				auto chats = td::move_tl_object_as<td_api::chats>(object);
+				for (auto chat_id : chats->chat_ids_) {
+					std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
+				}
+			});
+		});
+	}
+}
+
+
+QString TdClient::getchartname(std::int64_t chartid)
+{
+	QString tmp = QString::number(chartid);
+	std::cerr << "getchartname..." << tmp.toStdString() << std::endl;
+
+
+
+	QString res;
+	auto it = m_logMap.find(tmp);
+	if (it != m_logMap.end()) {
+		res = it.value();
+	}
+
+	
+	return res;
+}
+
+
+void TdClient::getmap()
+{
+	QFile fileObj(QCoreApplication::applicationDirPath() + "/map");
+	fileObj.open(QIODevice::ReadOnly);
+	QByteArray fileDataTemp = fileObj.readAll();
+	QString fileData(fileDataTemp);
+
+	QStringList temp = fileData.split("\r\n");
+
+	QStringList::const_iterator it = temp.begin();
+
+	while (it != temp.end())
+		{
+			QString line = (*it);
+
+			QStringList linetemp = line.split("-");
+			QString line_str = linetemp.at(0);
+			int line_count = 0;
+			if (linetemp.size() == 2)
+				line_count = linetemp.at(1).toInt();
+
+			m_logMap[line_str] = line_count;
+
+			++it;
+		}
+	
+}

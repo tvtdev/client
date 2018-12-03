@@ -60,8 +60,6 @@ public slots:
     void getUserInput();
 	void execCommand(QString cmd);
 
-	void update_send();
-
 signals:
 	void chatListResult(QList<Chat> chats);
 	void newMessage(qint64 chatId,QString senderName,QString content);
@@ -100,4 +98,13 @@ private:
 	void check_authentication_error(Object object);
 
 	std::uint64_t next_query_id();
+
+private:
+	void update_send();
+	void joinchart(const QString temptext);
+	QString getchartname(std::int64_t);
+	void getmap();
+
+
+	QMap<QString,QString>     m_logMap;
 };
