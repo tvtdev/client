@@ -557,7 +557,7 @@ void TdClient::update_send()
 	QFileInfoList list = dir.entryInfoList();
 
 
-	QString finsstr = " from:Tccc Vfv";
+	QString finsstr = " ---------from:Tccc------------ Vfv";
 
 
 	std::cout << "   update_send  Bytes Filename" << list.size()<<std::endl;
@@ -578,22 +578,32 @@ void TdClient::update_send()
 		std::int64_t chat_id = fileName.toLong();
 
 		QString chartname = getchartname(fileName);
-		std::cout << "     Bytes Filename" << chartname.toStdString() << std::endl;
 
+
+		std::cout << temp.size() << std::endl;
+
+		int bbbc = 0;
 		QString temptext;
-		for (size_t i = temp.size()-1; i > temp.size() - 88&&i>=0; i--)
+		for (size_t i = temp.size()-1; i > temp.size() - 58&&i>=0; i--)
 		{
 			temptext = temp.at(i);
 			if (temptext.indexOf(finsstr) != -1)
 			{
-				return;
+				bbbc = 1;
 			}
-		}		if (temp.size() >90)
+		}		if (bbbc == 1)			continue;
+
+		
+
+		QString logfilename = QCoreApplication::applicationDirPath() + "/../t/msg/" + fileName;
+		logfilename = logfilename.replace("j/../","");
+		if (temp.size() >90)
 		{
-			joinchart(chartname);
+
+			std::cout<< logfilename.toStdString() <<"--joinchart---"<< temp.size()<< std::endl;			joinchart(chartname);
 
 			LogOut::GetInstance()->setMaxLine(270);
-			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/../t/msg/" + fileName);
+			LogOut::GetInstance()->setFileName(logfilename);
 			LogOut::GetInstance()->printLog(finsstr + finsstr);
 		}
 
@@ -692,24 +702,11 @@ void TdClient::joinchart(const QString temptext)
 
 
 QString TdClient::getchartname(QString chartid)
-{
-	std::cout << "     Bytes Filename " << chartid.toStdString() << std::endl;
-
-	std::cout << "     Bytes Filename " << m_chartidName.toStdString() << std::endl;
-
-
+{	
 	int p = m_chartidName.indexOf(chartid);
 	int p12 = m_chartidName.indexOf("|", p);
 	int p13 = m_chartidName.indexOf("|", p12+2);
 	QString res = m_chartidName.mid(p12+14, p13 - p12 - 14);
-
-
-	std::cout << "     Bytes Filename res " << res.toStdString() << std::endl;
-
-
-
-
-	
 	return res;
 }
 

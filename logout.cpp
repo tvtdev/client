@@ -150,7 +150,7 @@ void LogOut::QStringList2LogQueue(const QString & logData ,const QString & lineB
 	QStringList::const_iterator it = temp.begin();
 	while (it != temp.end())
 	{
-		if (!m_logQueue.contains(*it))
+		//if (!m_logQueue.contains(*it))
 		{
 			m_logQueue << (*it);
 			if (m_logQueue.size() > m_maxLine)
