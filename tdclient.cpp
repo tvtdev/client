@@ -548,69 +548,108 @@ std::uint64_t TdClient::next_query_id()
 
 #include <QDir> 
 
-
 void TdClient::update_send()
 {
-	QDir dir(QCoreApplication::applicationDirPath() + "/../t/msg/");
+	QMap<QString, int>     m_logMap;
+	std::cout << "update_send..." << std::endl;
+
+
+
+	QDir dir(QCoreApplication::applicationDirPath() + "/msg/");
 	dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
+
 	dir.setSorting(QDir::Size | QDir::Reversed);
 	QFileInfoList list = dir.entryInfoList();
 
 
-	QString finsstr = " ---------from:Tccc------------ Vfv";
+	std::cout << "     Bytes Filename" << std::endl;
 
-
-	std::cout << "   update_send  Bytes Filename" << list.size()<<std::endl;
-
-
+	QString finsstr = " ---from:Tccc---- Vfv";
 	for (int i = 0; i < list.size(); ++i)
 	{
 		QFileInfo fileInfo = list.at(i);
 
 		QString fileName = QString("%1").arg(fileInfo.fileName());;
 
-		QFile fileObj(QCoreApplication::applicationDirPath() + "/../t/msg/" + fileName);
+		QFile fileObj(QCoreApplication::applicationDirPath() + "/msg/" + fileName);
 		fileObj.open(QIODevice::ReadOnly);
 		QByteArray fileDataTemp = fileObj.readAll();
 		QString fileData(fileDataTemp);
 
 		QStringList temp = fileData.split("\r\n");
 		std::int64_t chat_id = fileName.toLong();
-
-		QString chartname = getchartname(fileName);
-
-
-		std::cout << temp.size() << std::endl;
-
-		int bbbc = 0;
-		QString temptext;
-		for (size_t i = temp.size()-1; i > temp.size() - 58&&i>=0; i--)
+		if (temp.size() >90)
 		{
-			temptext = temp.at(i);
-			if (temptext.indexOf(finsstr) != -1)
+			QString textstr;
+			QString temptext = temp.at(63);
+			int fpos = 0;
+			for (size_t i = 50; i < temp.size(); i++)
 			{
-				bbbc = 1;
+				temptext = temp.at(i);
+				fpos = temptext.indexOf("from:");
+				if (fpos != -1)
+				{
+					int p = temptext.indexOf("] [", fpos);
+					textstr = temptext.mid(p + 3, temptext.length() - p - 4);
+
+					if (textstr.length()<300)
+					{
+						break;
+					}
+				}
 			}
-		}		if (bbbc == 1)			continue;
 
-		
 
-		QString logfilename = QCoreApplication::applicationDirPath() + "/../t/msg/" + fileName;
-		logfilename = logfilename.replace("j/../","");
-		if (temp.size() >90)
+
+			int bbbc = 0;
+			for (size_t i = temp.size() - 1; i > temp.size() - 58 && i >= 0; i--)
+			{
+				temptext = temp.at(i);
+				if (temptext.indexOf(finsstr) != -1)
+				{
+					bbbc = 1;
+				}
+			}
+			if (bbbc == 1)
+				continue;
+
+			std::string text = textstr.toStdString();
+
+
+			std::cerr << "Sending message to chat " << chat_id << "..." << std::endl;
+			auto send_message = td_api::make_object<td_api::sendMessage>();
+			send_message->chat_id_ = chat_id;
+			auto message_content = td_api::make_object<td_api::inputMessageText>();
+			message_content->text_ = td_api::make_object<td_api::formattedText>();
+			message_content->text_->text_ = std::move(text);
+			send_message->input_message_content_ = std::move(message_content);
+			send_query(std::move(send_message), {});
+
+			LogOut::GetInstance()->setMaxLine(70);
+			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msg/" + fileName);
+			LogOut::GetInstance()->printLog(finsstr + finsstr);
+		}
+
+		if (temp.size() < 2)
 		{
 
-			std::cout<< logfilename.toStdString() <<"--joinchart---"<< temp.size()<< std::endl;			joinchart(chartname);
+			std::string text = "hello all.";
+			std::cerr << "Sending message to chat " << chat_id << "..." << std::endl;
+			auto send_message = td_api::make_object<td_api::sendMessage>();
+			send_message->chat_id_ = chat_id;
+			auto message_content = td_api::make_object<td_api::inputMessageText>();
+			message_content->text_ = td_api::make_object<td_api::formattedText>();
+			message_content->text_->text_ = std::move(text);
+			send_message->input_message_content_ = std::move(message_content);
+			send_query(std::move(send_message), {});
 
-			LogOut::GetInstance()->setMaxLine(270);
-			LogOut::GetInstance()->setFileName(logfilename);
-			LogOut::GetInstance()->printLog(finsstr + finsstr);
-		}
-
-
+			LogOut::GetInstance()->setMaxLine(70);
+			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msg/" + fileName);
+			LogOut::GetInstance()->printLog("from:T Vv from:T Vv");
+		}
 	}
-
 }
+
 
 
 void TdClient::joinchart(const QString temptext)
