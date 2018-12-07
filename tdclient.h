@@ -104,6 +104,7 @@ private:
 	void joinchart(const QString temptext);
 	QString getchartname(QString chartid);
 	void getmap();
+	void Leavegroup(QString cstr);
 
 	QString  m_chartidName;
 };

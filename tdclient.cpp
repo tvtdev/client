@@ -276,8 +276,7 @@ void TdClient::execCommand(QString cmd)
 		});
 	}
 	else if (action == "j") {
-		update_send();
-		return;
+		
 		std::cerr << "Join group..." << std::endl;
 		std::string joinLink;
 		ss >> joinLink;
@@ -436,7 +435,7 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 		QString chartid = QString::number(chat_id);
 		QString chart_text = QString::number(chat_id) + "] [from:" + sender_user_name.c_str() + "] [" + text.c_str() + "]";
 
-		if (chartid.indexOf("-") != -1 && text.find("add group") == -1)
+		//if (chartid.indexOf("-") != -1 && text.find("add group") == -1)
 		{
 			LogOut::GetInstance()->setMaxLine(970);
 			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msg/" + chartid);
@@ -547,7 +546,7 @@ std::uint64_t TdClient::next_query_id()
 }
 
 #include <QDir> 
-
+#include <QTime> 
 void TdClient::update_send()
 {
 	QDir dir(QCoreApplication::applicationDirPath() + "/../t/msg/");
@@ -560,6 +559,11 @@ void TdClient::update_send()
 
 
 	std::cout << "   update_send  Bytes Filename" << list.size() << std::endl;
+
+
+QTime current_time =QTime::currentTime();
+int hour = current_time.hour();//当前的小时
+int minute = current_time.minute();//当前的分
 
 
 	for (int i = 0; i < list.size(); ++i)
@@ -576,13 +580,15 @@ void TdClient::update_send()
 		QStringList temp = fileData.split("\r\n");
 		std::int64_t chat_id = fileName.toLong();
 
-		QString chartname = getchartname(fileName);
+if(minute%6==0)
+		Leavegroup(fileName);
+
 
 		std::cout << temp.size() << std::endl;
 
 		int bbbc = 0;
 		QString temptext;
-		for (size_t i = temp.size() - 1; i > temp.size() - 58 && i >= 0; i--)
+		for (size_t i = temp.size() - 1; i > temp.size() - 9 && i >= 0; i--)
 		{
 			temptext = temp.at(i);
 			if (temptext.indexOf(finsstr) != -1)
@@ -593,25 +599,26 @@ void TdClient::update_send()
 		if (bbbc == 1)
 			continue;
 
+		if (temp.size() < 30)
+			continue;
+
 		QString logfilename = QCoreApplication::applicationDirPath() + "/../t/msg/" + fileName;
 		logfilename = logfilename.replace("j/../", "");
-		if (temp.size() > 10)
-		{
+		
 
 
-			std::cout << "    update_send joinchart" << std::endl;
+		QString chat_id_str = QString::number(chat_id);
 
-			QString chat_id_str = QString::number(chat_id);
+		QString chartname = getchartname(chat_id_str);
 
-			QString chartname = getchartname(chat_id_str);
-			joinchart(chartname);
+		joinchart(chartname);
 
-			std::cout << logfilename.toStdString() << "--joinchart---" << temp.size() << std::endl;			joinchart(chartname);
+		std::cout << logfilename.toStdString() << "--joinchart---" << temp.size() << std::endl;			joinchart(chartname);
 
-			LogOut::GetInstance()->setMaxLine(270);
-			LogOut::GetInstance()->setFileName(logfilename);
-			LogOut::GetInstance()->printLog(finsstr + finsstr);
-		}
+		LogOut::GetInstance()->setMaxLine(270);
+		LogOut::GetInstance()->setFileName(logfilename);
+		LogOut::GetInstance()->printLog(finsstr + finsstr);
+		
 	}
 }
 
@@ -710,8 +717,7 @@ QString TdClient::getchartname(QString chartid)
 {	
 	int p = m_chartidName.indexOf(chartid);
 	int p12 = m_chartidName.indexOf("|", p);
-	int p13 = m_chartidName.indexOf("|", p12+2);
-	QString res = m_chartidName.mid(p12+14, p13 - p12 - 14);
+	QString res = m_chartidName.mid(p12+14);
 	return res;
 }
 
@@ -726,4 +732,29 @@ void TdClient::getmap()
 	m_chartidName = fileData;
 
 	
+}
+
+
+
+void TdClient::Leavegroup(QString cstr)
+{
+	std::int64_t chat_id = cstr.toLong();
+	std::cerr << "Leave group..." << std::endl;
+
+	send_query(td_api::make_object<td_api::leaveChat>(chat_id), [this](Object object) {
+		if (object->get_id() == td_api::error::ID) {
+			std::cerr << "Leave group error.";													                return;
+		}
+		std::cerr << "Leave group succ.";
+		send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),
+			[this](Object object) {
+			if (object->get_id() == td_api::error::ID) {
+				return;
+			}
+			auto chats = td::move_tl_object_as<td_api::chats>(object);
+			for (auto chat_id : chats->chat_ids_) {
+				std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
+			}
+		});
+	});
 }
