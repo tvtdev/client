@@ -588,7 +588,7 @@ if(minute%6==0)
 
 		int bbbc = 0;
 		QString temptext;
-		for (size_t i = temp.size() - 1; i > temp.size() - 9 && i >= 0; i--)
+		for (size_t i = temp.size() - 1; i > temp.size() - 19 && i >= 0; i--)
 		{
 			temptext = temp.at(i);
 			if (temptext.indexOf(finsstr) != -1)
@@ -628,7 +628,13 @@ if(minute%6==0)
 void TdClient::joinchart(const QString temptext)
 {
 	std::string joinLink = temptext.toStdString();
-	std::cerr << "Join group..." << joinLink << std::endl;
+	
+joinLink.erase(joinLink.find_last_not_of('\r') + 1);
+
+joinLink.erase(joinLink.find_last_not_of('\n') + 1);
+
+
+	std::cerr << "Join group...[" << joinLink <<"]"<< std::endl;
 
 	if (joinLink.find("joinchat") == std::string::npos)
 	{
@@ -718,6 +724,10 @@ QString TdClient::getchartname(QString chartid)
 	int p = m_chartidName.indexOf(chartid);
 	int p12 = m_chartidName.indexOf("|", p);
 	QString res = m_chartidName.mid(p12+14);
+	int pt = res.indexOf("-");
+	if(pt != -1)
+		res = res.mid(0,pt);
+	res = res.simplified();	
 	return res;
 }
 
