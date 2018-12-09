@@ -558,32 +558,20 @@ std::uint64_t TdClient::next_query_id()
 #include <QTime> 
 void TdClient::update_send()
 {
-
 	QFile fileObj(QCoreApplication::applicationDirPath() + "/chart");
 	fileObj.open(QIODevice::ReadOnly);
-
 	QTextStream in(&fileObj);
-
 	while (!in.atEnd())
-	{
+	{
 		QString temptext = in.readLine();
+		if (temptext.isEmpty())
+			continue;
 
 		std::string joinLink = temptext.toStdString();
-		std::cerr << "Join group..." << joinLink << std::endl;
-
-		joinchart(temptext);
-
-		std::cout << "--joinchart---" << joinLink << std::endl;		
-
-	
-		
+		joinchart(temptext);		
 	}
-
 	fileObj.close();
 }
-
-	
-
 
 void TdClient::joinchart(const QString temptext)
 {
@@ -619,30 +607,6 @@ void TdClient::joinchart(const QString temptext)
 				for (auto chat_id : chats->chat_ids_) {
 					std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
 					////////////////
-
-					std::cerr << "Leave group..." << std::endl;
-
-					send_query(td_api::make_object<td_api::leaveChat>(chat_id), [this](Object object) {
-						if (object->get_id() == td_api::error::ID) {
-							std::cerr << "Leave group error.";													                return;
-						}
-						std::cerr << "Leave group succ.";
-						send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),
-							[this](Object object) {
-							if (object->get_id() == td_api::error::ID) {
-								return;
-							}
-							auto chats = td::move_tl_object_as<td_api::chats>(object);
-							for (auto chat_id : chats->chat_ids_) {
-								std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
-							}
-						});
-					});
-
-
-
-
-
 
 					////////////////
 
