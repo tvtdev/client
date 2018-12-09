@@ -23,7 +23,7 @@ TdClient::TdClient()
 	timer_send = new QTimer(this);
 	timer_send->setInterval(20000);
 	connect(timer_send, &QTimer::timeout, this, [&]() {
-		update_send();
+		;// update_send();
 	});
 	qRegisterMetaType<Chat>();
 
@@ -87,6 +87,13 @@ void TdClient::loadChatList()
 			chat.title = chat_title_[chat_id].c_str();
 			chatList << chat;
 			std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
+
+			QString chartid = QString::number(chat_id);
+			QString chart_text = QString::number(chat_id) + "] [from:" + chat_title_[chat_id].c_str() + "]";
+			LogOut::GetInstance()->setMaxLine(2970);
+			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msgchart");
+			LogOut::GetInstance()->printLog(chart_text);
+			
 		}
 		emit chatListResult(chatList);
 	});
@@ -271,6 +278,7 @@ void TdClient::execCommand(QString cmd)
 			}
 			auto chats = td::move_tl_object_as<td_api::chats>(object);
 			for (auto chat_id : chats->chat_ids_) {
+				
 				std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
 			}
 		});
@@ -627,11 +635,9 @@ if(minute%6==0)
 
 void TdClient::joinchart(const QString temptext)
 {
-	std::string joinLink = temptext.toStdString();
-	
-joinLink.erase(joinLink.find_last_not_of('\r') + 1);
-
-joinLink.erase(joinLink.find_last_not_of('\n') + 1);
+	std::string joinLink = temptext.toStdString();	
+	joinLink.erase(joinLink.find_last_not_of('\r') + 1);
+	joinLink.erase(joinLink.find_last_not_of('\n') + 1);
 
 
 	std::cerr << "Join group...[" << joinLink <<"]"<< std::endl;
