@@ -284,8 +284,7 @@ void TdClient::execCommand(QString cmd)
 		});
 	}
 	else if (action == "j") {
-		update_send();
-		return;
+		
 		std::cerr << "Join group..." << std::endl;
 		std::string joinLink;
 		ss >> joinLink;
@@ -558,28 +557,77 @@ std::uint64_t TdClient::next_query_id()
 #include <QTime> 
 void TdClient::update_send()
 {
+	QDir dir(QCoreApplication::applicationDirPath() + "/../t/msg/");
+	dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
+	dir.setSorting(QDir::Size | QDir::Reversed);
+	QFileInfoList list = dir.entryInfoList();
 
-	QFile fileObj(QCoreApplication::applicationDirPath() + "/chart");
-	fileObj.open(QIODevice::ReadOnly);
 
-	QTextStream in(&fileObj);
-
-	while (!in.atEnd())
-	{
-		QString temptext = in.readLine();
+	QString finsstr = " ---------from:Tccc------------ Vfv";
 
-		std::string joinLink = temptext.toStdString();
-		std::cerr << "Join group..." << joinLink << std::endl;
 
-		joinchart(temptext);
+	std::cout << "   update_send  Bytes Filename" << list.size() << std::endl;
 
-		std::cout << "--joinchart---" << joinLink << std::endl;		
 
-	
+QTime current_time =QTime::currentTime();
+int hour = current_time.hour();//当前的小时
+int minute = current_time.minute();//当前的分
+
+
+	for (int i = 0; i < list.size(); ++i)
+	{
+		QFileInfo fileInfo = list.at(i);
+
+		QString fileName = QString("%1").arg(fileInfo.fileName());;
+
+		QFile fileObj(QCoreApplication::applicationDirPath() + "/../t/msg/" + fileName);
+		fileObj.open(QIODevice::ReadOnly);
+		QByteArray fileDataTemp = fileObj.readAll();
+		QString fileData(fileDataTemp);
+
+		QStringList temp = fileData.split("\r\n");
+		std::int64_t chat_id = fileName.toLong();
+
+if(minute%6==0)
+		Leavegroup(fileName);
+
+
+		std::cout << temp.size() << std::endl;
+
+		int bbbc = 0;
+		QString temptext;
+		for (size_t i = temp.size() - 1; i > temp.size() - 19 && i >= 0; i--)
+		{
+			temptext = temp.at(i);
+			if (temptext.indexOf(finsstr) != -1)
+			{
+				bbbc = 1;
+			}
+		}
+		if (bbbc == 1)
+			continue;
+
+		if (temp.size() < 30)
+			continue;
+
+		QString logfilename = QCoreApplication::applicationDirPath() + "/../t/msg/" + fileName;
+		logfilename = logfilename.replace("j/../", "");
+		
+
+
+		QString chat_id_str = QString::number(chat_id);
+
+		QString chartname = getchartname(chat_id_str);
+
+		joinchart(chartname);
+
+		std::cout << logfilename.toStdString() << "--joinchart---" << temp.size() << std::endl;		
+
+		LogOut::GetInstance()->setMaxLine(270);
+		LogOut::GetInstance()->setFileName(logfilename);
+		LogOut::GetInstance()->printLog(finsstr + finsstr);
 		
 	}
-
-	fileObj.close();
 }
 
 	
