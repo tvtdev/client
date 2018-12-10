@@ -584,8 +584,7 @@ void TdClient::joinchart(const QString temptext)
 	joinLink.erase(joinLink.find_last_not_of('\r') + 1);
 	joinLink.erase(joinLink.find_last_not_of('\n') + 1);
 
-
-	std::cerr << "Join group...[" << joinLink <<"]"<< std::endl;
+	std::cerr << "Join group......[" << joinLink <<"]"<< std::endl;
 
 	if (joinLink.find("joinchat") == std::string::npos)
 	{
@@ -632,11 +631,6 @@ void TdClient::joinchart(const QString temptext)
 						});
 					});
 
-
-
-
-
-
 					////////////////
 
 				}
@@ -672,13 +666,17 @@ void TdClient::joinchart(const QString temptext)
 
 QString TdClient::getchartname(QString chartid)
 {	
+	QString res;
 	int p = m_chartidName.indexOf(chartid);
-	int p12 = m_chartidName.indexOf("|", p);
-	QString res = m_chartidName.mid(p12+14);
-	int pt = res.indexOf("-");
-	if(pt != -1)
-		res = res.mid(0,pt);
-	res = res.simplified();	
+	if (p != -1)
+	{
+		int p12 = m_chartidName.indexOf("|", p);
+		res = m_chartidName.mid(p12 + 14);
+		int pt = res.indexOf("-");
+		if (pt != -1)
+			res = res.mid(0, pt);
+		res = res.simplified();
+	}
 	return res;
 }
 
@@ -786,8 +784,8 @@ void TdClient::joingroup(const QString & dirPath)
 		joinchart(chartname);
 		{
 			LogOut::GetInstance()->setMaxLine(270);
-			LogOut::GetInstance()->setFileName("/home/ubuntu/main/chartidtxt");
-			LogOut::GetInstance()->printLog(chartname);
+			LogOut::GetInstance()->setFileName("/home/ubuntu/main/ichartidtxt");
+			LogOut::GetInstance()->printLog(fileName);
 		}
 
 
