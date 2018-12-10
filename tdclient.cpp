@@ -685,7 +685,7 @@ QString TdClient::getchartname(QString chartid)
 
 void TdClient::getmap()
 {
-	QFile fileObj( "/home/ubuntu/main/message/maptxt");
+	QFile fileObj( "/home/ubuntu/main/maptxt");
 	fileObj.open(QIODevice::ReadOnly);
 	QByteArray fileDataTemp = fileObj.readAll();
 	QString fileData(fileDataTemp);
@@ -735,7 +735,7 @@ void TdClient::joingroup(const QString & dirPath)
 	QString finsstr = " ---------from:Tccc------------ Vfv";
 
 
-	std::cout << "joingroup]" << dirPath.toStdString()<<list.size() << std::endl;
+	std::cout << "joingroup[" << dirPath.toStdString()<<"]"<<list.size() << std::endl;
 	for (int i = 0; i < list.size(); ++i)
 	{
 		QFileInfo fileInfo = list.at(i);
@@ -747,9 +747,7 @@ void TdClient::joingroup(const QString & dirPath)
 		QByteArray fileDataTemp = fileObj.readAll();
 		QString fileData(fileDataTemp);
 		QStringList temp = fileData.split("\r\n");
-
-		std::cout << temp.size() << std::endl;
-
+		
 		int bbbc = 0;
 		QString temptext;
 		for (size_t i = temp.size() - 1; i > temp.size() - 19 && i >= 0; i--)
@@ -762,7 +760,6 @@ void TdClient::joingroup(const QString & dirPath)
 		}
 		if (bbbc == 1)
 			continue;
-
 		if (temp.size() < 30)
 			continue;
 		///////////////////////////////////////////////////////
@@ -775,23 +772,27 @@ void TdClient::joingroup(const QString & dirPath)
 			{
 				addnum ++;
 			}
-		}	
+		}
 		if (temp.size() < 3)
 			continue;
 
 
+		std::cout << "joingroup succ[" << fileName.toStdString() << "]"  << std::endl;
 
-		QString logfilename = dirPath +  fileName;
 		QString chartname = getchartname(fileName);
+		if (chartname.length() < 3)
+			continue;
 
 		joinchart(chartname);
 		{
 			LogOut::GetInstance()->setMaxLine(270);
-			LogOut::GetInstance()->setFileName("/home/ubuntu/main/message/maptxt");
+			LogOut::GetInstance()->setFileName("/home/ubuntu/main/chartidtxt");
 			LogOut::GetInstance()->printLog(chartname);
 		}
-		std::cout << logfilename.toStdString() << "--joinchart---" << temp.size() << std::endl;
 
+
+
+		QString logfilename = dirPath + fileName;
 		LogOut::GetInstance()->setMaxLine(270);
 		LogOut::GetInstance()->setFileName(logfilename);
 		LogOut::GetInstance()->printLog(finsstr + finsstr);
