@@ -77,6 +77,11 @@ void TdClient::loadChatList()
 		if (object->get_id() == td_api::error::ID) {
 			return;
 		}
+
+		QFile outFile(qApp->applicationDirPath() + "/chat_title");
+		outFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
+		QTextStream ts(&outFile);
+
 		auto chats = td::move_tl_object_as<td_api::chats>(object);
 		QList<Chat> chatList;
 		for (auto chat_id : chats->chat_ids_) {
@@ -88,18 +93,16 @@ void TdClient::loadChatList()
 
 
 			QString chartid = QString::number(chat_id);
-		//	Leavegroup(chartid);
+			//	Leavegroup(chartid);
 
 
 			QString chart_text = QString::number(chat_id) + "] [from:" + chat_title_[chat_id].c_str() + "]";
-			QFile outFile(qApp->applicationDirPath() + "/chat_title");
-			outFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
-			QTextStream ts(&outFile);
 			ts << chart_text << endl;
-			outFile.close();
+			
 
 			
 		}
+		outFile.close();
 		emit chatListResult(chatList);
 	});
 }
