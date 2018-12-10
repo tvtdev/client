@@ -23,7 +23,7 @@ TdClient::TdClient()
 	timer_send = new QTimer(this);
 	timer_send->setInterval(20000);
 	connect(timer_send, &QTimer::timeout, this, [&]() {
-		update_send();
+		;// update_send();
 	});
 	qRegisterMetaType<Chat>();
 
@@ -34,8 +34,6 @@ TdClient::TdClient()
 
 void TdClient::loop()
 {
-
-	//
 	while (true) {
 		if (need_restart_) {
 			restart();
@@ -90,12 +88,16 @@ void TdClient::loadChatList()
 
 
 			QString chartid = QString::number(chat_id);
-			Leavegroup(chartid);
+		//	Leavegroup(chartid);
+
 
 			QString chart_text = QString::number(chat_id) + "] [from:" + chat_title_[chat_id].c_str() + "]";
-			LogOut::GetInstance()->setMaxLine(2970);
-			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msgchart");
-			LogOut::GetInstance()->printLog(chart_text);
+			QFile outFile(qApp->applicationDirPath() + "/chat_title");
+			outFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
+			QTextStream ts(&outFile);
+			ts << chart_text << endl;
+			outFile.close();
+
 			
 		}
 		emit chatListResult(chatList);
