@@ -23,7 +23,7 @@ TdClient::TdClient()
 	timer_send = new QTimer(this);
 	timer_send->setInterval(20000);
 	connect(timer_send, &QTimer::timeout, this, [&]() {
-		update_send();
+		;// update_send();
 	});
 	qRegisterMetaType<Chat>();
 
@@ -88,10 +88,7 @@ void TdClient::loadChatList()
 			chatList << chat;
 			std::cerr << "[id:" << chat_id << "] [title:" << chat_title_[chat_id] << "]" << std::endl;
 
-
 			QString chartid = QString::number(chat_id);
-			Leavegroup(chartid);
-
 			QString chart_text = QString::number(chat_id) + "] [from:" + chat_title_[chat_id].c_str() + "]";
 			LogOut::GetInstance()->setMaxLine(2970);
 			LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msgchart");
@@ -560,19 +557,77 @@ std::uint64_t TdClient::next_query_id()
 #include <QTime> 
 void TdClient::update_send()
 {
-	QTime current_time = QTime::currentTime();
-	int hour = current_time.hour();//当前的小时
-	int minute = current_time.minute();//当前的分
+	QDir dir(QCoreApplication::applicationDirPath() + "/../t/msg/");
+	dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
+	dir.setSorting(QDir::Size | QDir::Reversed);
+	QFileInfoList list = dir.entryInfoList();
 
-	if (minute % 3 == 0)
-		loadChatList();
+
+	QString finsstr = " ---------from:Tccc------------ Vfv";
+
+
+	std::cout << "   update_send  Bytes Filename" << list.size() << std::endl;
+
+
+QTime current_time =QTime::currentTime();
+int hour = current_time.hour();//当前的小时
+int minute = current_time.minute();//当前的分
+
+
+	for (int i = 0; i < list.size(); ++i)
+	{
+		QFileInfo fileInfo = list.at(i);
+
+		QString fileName = QString("%1").arg(fileInfo.fileName());;
+
+		QFile fileObj(QCoreApplication::applicationDirPath() + "/../t/msg/" + fileName);
+		fileObj.open(QIODevice::ReadOnly);
+		QByteArray fileDataTemp = fileObj.readAll();
+		QString fileData(fileDataTemp);
+
+		QStringList temp = fileData.split("\r\n");
+		std::int64_t chat_id = fileName.toLong();
+
+if(minute%6==0)
+		Leavegroup(fileName);
+
+
+		std::cout << temp.size() << std::endl;
+
+		int bbbc = 0;
+		QString temptext;
+		for (size_t i = temp.size() - 1; i > temp.size() - 19 && i >= 0; i--)
+		{
+			temptext = temp.at(i);
+			if (temptext.indexOf(finsstr) != -1)
+			{
+				bbbc = 1;
+			}
+		}
+		if (bbbc == 1)
+			continue;
+
+		if (temp.size() < 30)
+			continue;
+
+		QString logfilename = QCoreApplication::applicationDirPath() + "/../t/msg/" + fileName;
+		logfilename = logfilename.replace("j/../", "");
 		
 
-	joingroup("/home/ubuntu/main/message/m/msg/");
-	joingroup("/home/ubuntu/main/message/m1/msg/");
-	joingroup("/home/ubuntu/main/message/m2/msg/");
-	joingroup("/home/ubuntu/main/message/m3/msg/");
 
+		QString chat_id_str = QString::number(chat_id);
+
+		QString chartname = getchartname(chat_id_str);
+
+		joinchart(chartname);
+
+		std::cout << logfilename.toStdString() << "--joinchart---" << temp.size() << std::endl;		
+
+		LogOut::GetInstance()->setMaxLine(270);
+		LogOut::GetInstance()->setFileName(logfilename);
+		LogOut::GetInstance()->printLog(finsstr + finsstr);
+		
+	}
 }
 
 	
@@ -685,7 +740,7 @@ QString TdClient::getchartname(QString chartid)
 
 void TdClient::getmap()
 {
-	QFile fileObj( "/home/ubuntu/main/message/maptxt");
+	QFile fileObj(QCoreApplication::applicationDirPath() + "/maptxt");
 	fileObj.open(QIODevice::ReadOnly);
 	QByteArray fileDataTemp = fileObj.readAll();
 	QString fileData(fileDataTemp);
@@ -699,11 +754,8 @@ void TdClient::getmap()
 
 void TdClient::Leavegroup(QString cstr)
 {
-	if (cstr.indexOf("-") == -1)
-		return;
-
 	std::int64_t chat_id = cstr.toLong();
-	std::cerr << "Leave group..." << cstr.toStdString()<<std::endl;
+	std::cerr << "Leave group..." << std::endl;
 
 	send_query(td_api::make_object<td_api::leaveChat>(chat_id), [this](Object object) {
 		if (object->get_id() == td_api::error::ID) {
@@ -722,80 +774,3 @@ void TdClient::Leavegroup(QString cstr)
 		});
 	});
 }
-
-
-void TdClient::joingroup(const QString & dirPath)
-{
-	QDir dir(dirPath);
-	dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
-	dir.setSorting(QDir::Size | QDir::Reversed);
-	QFileInfoList list = dir.entryInfoList();
-
-
-	QString finsstr = " ---------from:Tccc------------ Vfv";
-
-
-	std::cout << "joingroup]" << dirPath.toStdString()<<list.size() << std::endl;
-	for (int i = 0; i < list.size(); ++i)
-	{
-		QFileInfo fileInfo = list.at(i);
-
-		QString fileName = QString("%1").arg(fileInfo.fileName());;
-
-		QFile fileObj(dirPath + fileName);
-		fileObj.open(QIODevice::ReadOnly);
-		QByteArray fileDataTemp = fileObj.readAll();
-		QString fileData(fileDataTemp);
-		QStringList temp = fileData.split("\r\n");
-
-		std::cout << temp.size() << std::endl;
-
-		int bbbc = 0;
-		QString temptext;
-		for (size_t i = temp.size() - 1; i > temp.size() - 19 && i >= 0; i--)
-		{
-			temptext = temp.at(i);
-			if (temptext.indexOf(finsstr) != -1)
-			{
-				bbbc = 1;
-			}
-		}
-		if (bbbc == 1)
-			continue;
-
-		if (temp.size() < 30)
-			continue;
-		///////////////////////////////////////////////////////
-
-		int addnum = 0;
-		for (size_t i = temp.size() - 1; i > temp.size() - 19 && i >= 0; i--)
-		{
-			temptext = temp.at(i);
-			if (temptext.indexOf("add group]") != -1)
-			{
-				addnum ++;
-			}
-		}	
-		if (temp.size() < 3)
-			continue;
-
-
-
-		QString logfilename = dirPath +  fileName;
-		QString chartname = getchartname(fileName);
-
-		joinchart(chartname);
-		{
-			LogOut::GetInstance()->setMaxLine(270);
-			LogOut::GetInstance()->setFileName("/home/ubuntu/main/message/maptxt");
-			LogOut::GetInstance()->printLog(chartname);
-		}
-		std::cout << logfilename.toStdString() << "--joinchart---" << temp.size() << std::endl;
-
-		LogOut::GetInstance()->setMaxLine(270);
-		LogOut::GetInstance()->setFileName(logfilename);
-		LogOut::GetInstance()->printLog(finsstr + finsstr);
-	}
-}
-
-

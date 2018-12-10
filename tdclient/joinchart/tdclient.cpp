@@ -560,7 +560,9 @@ void TdClient::update_send()
 {
 	QFile fileObj(QCoreApplication::applicationDirPath() + "/chart");
 	fileObj.open(QIODevice::ReadOnly);
-	QTextStream in(&fileObj);
+	QTextStream in(&fileObj);
+
+	int ji = 0;
 	while (!in.atEnd())
 	{
 		QString temptext = in.readLine();
@@ -568,7 +570,14 @@ void TdClient::update_send()
 			continue;
 
 		std::string joinLink = temptext.toStdString();
-		joinchart(temptext);		
+		joinchart(temptext);
+
+		{
+			QEventLoop loop;
+			QTimer::singleShot(20000, &loop, SLOT(quit()));
+			loop.exec();
+		}
+
 	}
 	fileObj.close();
 }
@@ -660,10 +669,7 @@ void TdClient::getmap()
 	fileObj.open(QIODevice::ReadOnly);
 	QByteArray fileDataTemp = fileObj.readAll();
 	QString fileData(fileDataTemp);
-
-	m_chartidName = fileData;
-
-	
+	m_chartidName = fileData;	
 }
 
 

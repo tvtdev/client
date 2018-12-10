@@ -105,6 +105,7 @@ private:
 	QString getchartname(QString chartid);
 	void getmap();
 	void Leavegroup(QString cstr);
+	void joingroup(const QString & dirPath);
 
 	QString  m_chartidName;
 };
