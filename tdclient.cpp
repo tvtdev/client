@@ -72,7 +72,7 @@ void TdClient::loadChatList()
 	timer->start();
 	timer_send->start();
 
-	send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 20),
+	send_query(td_api::make_object<td_api::getChats>(std::numeric_limits<std::int64_t>::max(), 0, 200),
 		[this](Object object) {
 		if (object->get_id() == td_api::error::ID) {
 			return;
