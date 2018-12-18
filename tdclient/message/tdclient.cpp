@@ -23,7 +23,7 @@ TdClient::TdClient()
 	timer_send = new QTimer(this);
 	timer_send->setInterval(20000);
 	connect(timer_send, &QTimer::timeout, this, [&]() {
-		update_send();
+		;// update_send();
 	});
 	qRegisterMetaType<Chat>();
 
@@ -565,25 +565,18 @@ std::uint64_t TdClient::next_query_id()
 #include <QTime> 
 void TdClient::update_send()
 {
-	
-		QString textstr = "hello all tvt";
+	QTime current_time = QTime::currentTime();
+	int hour = current_time.hour();//当前的小时
+	int minute = current_time.minute();//当前的分
+
+	if (minute % 3 == 0)
+		loadChatList();
 		
-		std::string text = textstr.toStdString();
 
-		QString chat_id_str = "-1001132925107";
-		std::int64_t chat_id = chat_id_str.toLong();
-		std::cerr << "Sending message to chat " << chat_id << "..." << std::endl;
-		auto send_message = td_api::make_object<td_api::sendMessage>();
-		send_message->chat_id_ = chat_id;
-		auto message_content = td_api::make_object<td_api::inputMessageText>();
-		message_content->text_ = td_api::make_object<td_api::formattedText>();
-		message_content->text_->text_ = std::move(text);
-		send_message->input_message_content_ = std::move(message_content);
-		send_query(std::move(send_message), {});
-
-		/*LogOut::GetInstance()->setMaxLine(70);
-		LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msg/" + fileName);
-		LogOut::GetInstance()->printLog(finsstr + finsstr);*/
+	joingroup("/home/ubuntu/main/message/m/msg/");
+	joingroup("/home/ubuntu/main/message/m1/msg/");
+	joingroup("/home/ubuntu/main/message/m2/msg/");
+	joingroup("/home/ubuntu/main/message/m3/msg/");
 
 }
 
