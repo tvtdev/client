@@ -443,6 +443,7 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 		auto chat_id = update_new_message.message_->chat_id_;
 		auto sender_user_name = get_user_name(update_new_message.message_->sender_user_id_);
 		std::string text;
+		QString strq;
 		if (update_new_message.message_->content_->get_id() == td_api::messageText::ID) {
 			text = static_cast<td_api::messageText &>(*update_new_message.message_->content_).text_->text_;
 		}
