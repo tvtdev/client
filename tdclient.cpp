@@ -486,7 +486,7 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 						m_autoSendGroupIds.contains(QString::number(chat_id)) && !m_sentUserIds.contains(userId)) {
 						std::cerr << "Group message" << std::endl;
 
-						qDebug() << "join  " ;
+						qDebug() << "join  hhh group" ;
 						send_query(
 							td_api::make_object<td_api::getChatMember>(chat_id, userId),
 							[this, userId](Object object) {
@@ -511,6 +511,8 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 									auto chat = td::move_tl_object_as<td_api::chat>(object);
 									std::cerr << "[auto send message to id:" << userId
 										<< "] [title:" << chat->title_ << "]" << std::endl;
+									
+										qDebug() << "join  hhh group" ;
 									m_sentUserIds << userId;
 									auto send_message = td_api::make_object<td_api::sendMessage>();
 									send_message->chat_id_ = chat->id_;
