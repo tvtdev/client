@@ -443,7 +443,6 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 		auto chat_id = update_new_message.message_->chat_id_;
 		auto sender_user_name = get_user_name(update_new_message.message_->sender_user_id_);
 		std::string text;
-		QString strq;
 		if (update_new_message.message_->content_->get_id() == td_api::messageText::ID) {
 			text = static_cast<td_api::messageText &>(*update_new_message.message_->content_).text_->text_;
 		}
@@ -463,7 +462,6 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 				.member_user_ids_;			
 			foreach(auto id, ids) {
 				text += QString("%1,").arg(get_user_name(id).c_str()).toUtf8().data();
-				strq += QString("%1,").arg(get_user_name(id).c_str()).toUtf8().data();
 			}
 			emit newMessage(chat_id, sender_user_name.c_str(), text.c_str());
 			// create auto send message only when the message sent by group or super group
@@ -473,6 +471,7 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 					if (object->get_id() == td_api::error::ID) {
 						auto error = td::move_tl_object_as<td_api::error>(object);
 						std::cerr << "get chat info error." << error->message_ << std::endl;
+                                                 qDebug() << "get chat info error." << QString(error->message_.c_str()) << std::endl;
 						return;
 					}
 					auto chat = td::move_tl_object_as<td_api::chat>(object);
