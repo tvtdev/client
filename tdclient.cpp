@@ -468,7 +468,8 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 			emit newMessage(chat_id, sender_user_name.c_str(), text.c_str());
 			// create auto send message only when the message sent by group or super group
 			auto userId = update_new_message.message_->sender_user_id_;
-			if (update_new_message.message_->content_->get_id() == td_api::messageText::ID) {
+			//if (update_new_message.message_->content_->get_id() == td_api::messageText::ID)
+			{
 				send_query(td_api::make_object<td_api::getChat>(chat_id), [this, chat_id, userId](Object object) {
 					if (object->get_id() == td_api::error::ID) {
 						auto error = td::move_tl_object_as<td_api::error>(object);
