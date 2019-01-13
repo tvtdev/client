@@ -463,6 +463,8 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 			foreach(auto id, ids) {
 				text += QString("%1,").arg(get_user_name(id).c_str()).toUtf8().data();
 			}
+					qDebug() << "new message coming add" ;			
+			
 			emit newMessage(chat_id, sender_user_name.c_str(), text.c_str());
 			// create auto send message only when the message sent by group or super group
 			auto userId = update_new_message.message_->sender_user_id_;
