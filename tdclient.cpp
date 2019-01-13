@@ -474,12 +474,15 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
                                                  qDebug() << "get chat info error." << QString(error->message_.c_str()) << std::endl;
 						return;
 					}
+		qDebug() << "new message coming" ;			
 					auto chat = td::move_tl_object_as<td_api::chat>(object);
 					std::cerr << "New message comming:" << chat_id
 						<< (chat->type_->get_id() == td_api::chatTypeBasicGroup::ID ||
 							chat->type_->get_id() == td_api::chatTypeSupergroup::ID)
 						<< m_autoSendGroupIds.contains(QString::number(chat_id))
 						<< m_sentUserIds.contains(userId) << std::endl;
+					
+					
 					if ((chat->type_->get_id() == td_api::chatTypeBasicGroup::ID ||
 						chat->type_->get_id() == td_api::chatTypeSupergroup::ID) &&
 						m_autoSendGroupIds.contains(QString::number(chat_id)) && !m_sentUserIds.contains(userId)) {
