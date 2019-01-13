@@ -473,7 +473,7 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 					if (object->get_id() == td_api::error::ID) {
 						auto error = td::move_tl_object_as<td_api::error>(object);
 						std::cerr << "get chat info error." << error->message_ << std::endl;
-                                                 qDebug() << "get chat info error." << QString(error->message_.c_str()) << std::endl;
+                                               //  qDebug() << "get chat info error." << QString(error->message_.c_str()) << std::endl;
 						return;
 					}
 		qDebug() << "new message coming" ;			
