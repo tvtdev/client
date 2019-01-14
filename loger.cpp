@@ -1,4 +1,6 @@
 #include "loger.h"
+#include <QCoreApplication>
+
 #define GLOBALVAR_LOG_PATH "/home/ubuntu/src/build/"
 Loger::Loger(QObject *parent)
 	: QObject(parent), m_file(nullptr), m_ts(nullptr)
@@ -72,7 +74,7 @@ void Loger::updateLogFileName()
 	{
 		delete m_ts;
 	}
-	m_file = new QFile(GLOBALVAR_LOG_PATH + QString("%2_%3_%1.log").arg(QDate::currentDate().toString("yyyy-MM-dd")).arg("").arg(""));
+	m_file = new QFile(QCoreApplication::applicationDirPath() + QString("/%2_%3_%1.log").arg(QDate::currentDate().toString("yyyy-MM-dd")).arg("").arg(""));
 	if (!m_file->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
 	{
 		qDebug() << "Open log file error,error:" << m_file->errorString();

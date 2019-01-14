@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_TdClient_t {
-    QByteArrayData data[24];
-    char stringdata0[225];
+    QByteArrayData data[23];
+    char stringdata0[213];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -54,8 +54,7 @@ QT_MOC_LITERAL(18, 167, 6), // "update"
 QT_MOC_LITERAL(19, 174, 9), // "authorize"
 QT_MOC_LITERAL(20, 184, 12), // "getUserInput"
 QT_MOC_LITERAL(21, 197, 11), // "execCommand"
-QT_MOC_LITERAL(22, 209, 3), // "cmd"
-QT_MOC_LITERAL(23, 213, 11) // "update_send"
+QT_MOC_LITERAL(22, 209, 3) // "cmd"
 
     },
     "TdClient\0chatListResult\0\0QList<Chat>\0"
@@ -64,7 +63,7 @@ QT_MOC_LITERAL(23, 213, 11) // "update_send"
     "sendMessage\0std::int64_t\0chat_id\0"
     "std::string\0text\0loadChatList\0update\0"
     "authorize\0getUserInput\0execCommand\0"
-    "cmd\0update_send"
+    "cmd"
 };
 #undef QT_MOC_LITERAL
 
@@ -74,7 +73,7 @@ static const uint qt_meta_data_TdClient[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-      12,   14, // methods
+      11,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -82,20 +81,19 @@ static const uint qt_meta_data_TdClient[] = {
        3,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,   74,    2, 0x06 /* Public */,
-       5,    3,   77,    2, 0x06 /* Public */,
-       9,    0,   84,    2, 0x06 /* Public */,
+       1,    1,   69,    2, 0x06 /* Public */,
+       5,    3,   72,    2, 0x06 /* Public */,
+       9,    0,   79,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-      10,    0,   85,    2, 0x0a /* Public */,
-      11,    0,   86,    2, 0x0a /* Public */,
-      12,    2,   87,    2, 0x0a /* Public */,
-      17,    0,   92,    2, 0x0a /* Public */,
-      18,    0,   93,    2, 0x0a /* Public */,
-      19,    0,   94,    2, 0x0a /* Public */,
-      20,    0,   95,    2, 0x0a /* Public */,
-      21,    1,   96,    2, 0x0a /* Public */,
-      23,    0,   99,    2, 0x0a /* Public */,
+      10,    0,   80,    2, 0x0a /* Public */,
+      11,    0,   81,    2, 0x0a /* Public */,
+      12,    2,   82,    2, 0x0a /* Public */,
+      17,    0,   87,    2, 0x0a /* Public */,
+      18,    0,   88,    2, 0x0a /* Public */,
+      19,    0,   89,    2, 0x0a /* Public */,
+      20,    0,   90,    2, 0x0a /* Public */,
+      21,    1,   91,    2, 0x0a /* Public */,
 
  // signals: parameters
     QMetaType::Void, 0x80000000 | 3,    4,
@@ -111,7 +109,6 @@ static const uint qt_meta_data_TdClient[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void, QMetaType::QString,   22,
-    QMetaType::Void,
 
        0        // eod
 };
@@ -133,7 +130,6 @@ void TdClient::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, vo
         case 8: _t->authorize(); break;
         case 9: _t->getUserInput(); break;
         case 10: _t->execCommand((*reinterpret_cast< QString(*)>(_a[1]))); break;
-        case 11: _t->update_send(); break;
         default: ;
         }
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
@@ -198,13 +194,13 @@ int TdClient::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 12)
+        if (_id < 11)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 12;
+        _id -= 11;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 12)
+        if (_id < 11)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 12;
+        _id -= 11;
     }
     return _id;
 }

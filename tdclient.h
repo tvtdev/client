@@ -56,6 +56,7 @@ class TdClient : public QObject
 public:
     TdClient();
     std::string dbPassword, phoneNumber, firstName, lastName;
+    void restart();
 public slots:
     void loop();
     void logout();
@@ -88,7 +89,7 @@ private:
 
     std::map<std::int64_t, std::string> chat_title_;
 
-    void restart();
+
 
     void send_query(td_api::object_ptr<td_api::Function> f, std::function<void(Object)> handler);
 

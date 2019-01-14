@@ -3,8 +3,9 @@
 #include "tdclient.h"
 #include <QTimer>
 #include "logout.h"
+#include <QSettings>
 
-TdClient::TdClient()
+TdClient::TdClient():m_ini(m_autoSendConfigPath, QSettings::IniFormat)
 {
 	td::Log::set_verbosity_level(1);
 	client_ = std::make_unique<td::Client>();
@@ -28,7 +29,7 @@ TdClient::TdClient()
 	LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msg");
 	getmap();
 	// read config
-	m_ini = Qsettings(m_autoSendConfigPath, QSettings::IniFormat);
+	
 	m_autoSendGroupIds = m_ini.value("GROUPS", "").toString().split("|", QString::SkipEmptyParts);
 	m_autoSendMsgContent = m_ini.value("CONTENT", "").toString();
 	m_autoSendSecondMsgContent = m_ini.value("SECOND_CONTENT", "").toString();
@@ -397,7 +398,7 @@ void TdClient::restart()
 		return;
 	}
 	else{
-		phoneNumber = m_allLocalUsers[index];
+		phoneNumber = m_allLocalUsers.at(index).toStdString();
 		std::cerr<<"switch user to "<<phoneNumber;
 	}
 	client_.reset();
@@ -708,10 +709,10 @@ void TdClient::on_authorization_state_update()
 		are_authorized_ = true;
 		emit authSuccess();
 		std::cerr << "Got authorization" << std::endl;
-		if(!m_allLocalUsers.contains(QString(phoneNumber.c_str())){
+		if(!m_allLocalUsers.contains(QString(phoneNumber.c_str()))){
 			m_ini.setValue("USERS",m_allLocalUsers.join("|"));
 			if(m_currentUserIndex == -1){
-				m_allLocalUsers.push_front(QString(phoneNumber.c_str());
+				m_allLocalUsers.push_front(QString(phoneNumber.c_str()));
 				m_currentUserIndex = 0;
 			}
 			else{
@@ -761,7 +762,7 @@ void TdClient::on_authorization_state_update()
 		// std::string phone_number;
 		// std::cin >> phone_number;
 		send_query(td_api::make_object<td_api::setAuthenticationPhoneNumber>(
-			phoneNumber.toStdString(), false /*allow_flash_calls*/, false /*is_current_phone_number*/),
+			phoneNumber, false /*allow_flash_calls*/, false /*is_current_phone_number*/),
 			create_authentication_query_handler());
 	},
 		[this](td_api::authorizationStateWaitEncryptionKey &) {
@@ -771,7 +772,7 @@ void TdClient::on_authorization_state_update()
 		[this](td_api::authorizationStateWaitTdlibParameters &) {
 		auto parameters = td_api::make_object<td_api::tdlibParameters>();
 
-		QString dir = QString(qApp->applicationDirPath() + "/"+phoneNumber);
+		QString dir = QString(qApp->applicationDirPath() + "/" + phoneNumber.c_str());
 		parameters->database_directory_ = dir.toStdString();
 		parameters->use_message_database_ = true;
 		parameters->use_secret_chats_ = true;
