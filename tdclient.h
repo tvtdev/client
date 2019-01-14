@@ -16,6 +16,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <QSettings>
 #include "utility.h"
 // overloaded
 namespace detail {
@@ -119,4 +120,7 @@ private:
     QString m_autoSendMsgContent, m_autoSendSecondMsgContent;
     QVector<int> m_sentUserIds;
     QVector<int> m_secondSentUserIds;
+    QStringList m_allLocalUsers;
+    QSettings m_ini;
+    int m_currentUserIndex = -1;
 };

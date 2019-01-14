@@ -3,7 +3,6 @@
 #include "tdclient.h"
 #include <QTimer>
 #include "logout.h"
-#include <QSettings>
 
 TdClient::TdClient()
 {
@@ -29,10 +28,11 @@ TdClient::TdClient()
 	LogOut::GetInstance()->setFileName(QCoreApplication::applicationDirPath() + "/msg");
 	getmap();
 	// read config
-	QSettings ini(m_autoSendConfigPath, QSettings::IniFormat);
-	m_autoSendGroupIds = ini.value("GROUPS", "").toString().split("|", QString::SkipEmptyParts);
-	m_autoSendMsgContent = ini.value("CONTENT", "").toString();
-	m_autoSendSecondMsgContent = ini.value("SECOND_CONTENT", "").toString();
+	m_ini = Qsettings(m_autoSendConfigPath, QSettings::IniFormat);
+	m_autoSendGroupIds = m_ini.value("GROUPS", "").toString().split("|", QString::SkipEmptyParts);
+	m_autoSendMsgContent = m_ini.value("CONTENT", "").toString();
+	m_autoSendSecondMsgContent = m_ini.value("SECOND_CONTENT", "").toString();
+	m_allLocalUsers = m_ini.value("USERS","").toString().split("|", QString::SkipEmptyParts);
 	std::cerr << m_autoSendConfigPath.toStdString() << m_autoSendGroupIds.join("|").toStdString()
 		<< m_autoSendMsgContent.toStdString() << m_autoSendSecondMsgContent.toStdString() << std::endl;
 }
@@ -383,6 +383,23 @@ void TdClient::execCommand(QString cmd)
 
 void TdClient::restart()
 {
+	auto nextUserIndex = [&](){
+		if(m_allLocalUsers.count() == 1)return -1;
+		if(m_currentUserIndex + 1 < m_allLocalUsers.count())return ++m_currentUserIndex;
+		else {
+			m_currentUserIndex = 0;
+			return m_currentUserIndex;
+		}
+	};
+	int index = nextUserIndex();
+	if(index == -1){
+		std::cerr<<"No other user can switch,please check.";
+		return;
+	}
+	else{
+		phoneNumber = m_allLocalUsers[index];
+		std::cerr<<"switch user to "<<phoneNumber;
+	}
 	client_.reset();
 	//*this = TdClient();
 }
@@ -523,7 +540,7 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 									send_message->chat_id_ = chat->id_;
 									auto message_content = td_api::make_object<td_api::inputMessageText>();
 									message_content->text_ = td_api::make_object<td_api::formattedText>();
-									std::string text = m_autoSendMsgContent.toStdString();
+									std::string text = QString("Dear %1: %2").arg(userId).arg(m_autoSendMsgContent).toStdString();
 									message_content->text_->text_ = std::move(text);
 									send_message->input_message_content_ = std::move(message_content);
 									send_query(std::move(send_message), [this](Object object) {
@@ -548,7 +565,7 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 						send_message->chat_id_ = chat->id_;
 						auto message_content = td_api::make_object<td_api::inputMessageText>();
 						message_content->text_ = td_api::make_object<td_api::formattedText>();
-						std::string text = m_autoSendSecondMsgContent.toStdString();
+						std::string text = QString("Dear %1: %2").arg(userId).arg(m_autoSendSecondMsgContent).toStdString();
 						message_content->text_->text_ = std::move(text);
 						send_message->input_message_content_ = std::move(message_content);
 						send_query(std::move(send_message), [this](Object object) {
@@ -691,6 +708,21 @@ void TdClient::on_authorization_state_update()
 		are_authorized_ = true;
 		emit authSuccess();
 		std::cerr << "Got authorization" << std::endl;
+		if(!m_allLocalUsers.contains(QString(phoneNumber.c_str())){
+			m_ini.setValue("USERS",m_allLocalUsers.join("|"));
+			if(m_currentUserIndex == -1){
+				m_allLocalUsers.push_front(QString(phoneNumber.c_str());
+				m_currentUserIndex = 0;
+			}
+			else{
+				m_allLocalUsers << QString(phoneNumber.c_str());
+				m_currentUserIndex = m_allLocalUsers.count()-1;
+			}
+			
+			
+		}else{
+			m_currentUserIndex =  m_allLocalUsers.indexOf(QString(phoneNumber.c_str()));
+		}
 	},
 			[this](td_api::authorizationStateLoggingOut &) {
 		are_authorized_ = false;
@@ -725,11 +757,11 @@ void TdClient::on_authorization_state_update()
 			create_authentication_query_handler());
 	},
 		[this](td_api::authorizationStateWaitPhoneNumber &) {
-		std::cerr << "Enter phone number: ";
-		std::string phone_number;
-		std::cin >> phone_number;
+		// std::cerr << "Enter phone number: ";
+		// std::string phone_number;
+		// std::cin >> phone_number;
 		send_query(td_api::make_object<td_api::setAuthenticationPhoneNumber>(
-			phone_number, false /*allow_flash_calls*/, false /*is_current_phone_number*/),
+			phoneNumber.toStdString(), false /*allow_flash_calls*/, false /*is_current_phone_number*/),
 			create_authentication_query_handler());
 	},
 		[this](td_api::authorizationStateWaitEncryptionKey &) {
@@ -739,7 +771,7 @@ void TdClient::on_authorization_state_update()
 		[this](td_api::authorizationStateWaitTdlibParameters &) {
 		auto parameters = td_api::make_object<td_api::tdlibParameters>();
 
-		QString dir = QString(qApp->applicationDirPath() + "/tdlib");
+		QString dir = QString(qApp->applicationDirPath() + "/"+phoneNumber);
 		parameters->database_directory_ = dir.toStdString();
 		parameters->use_message_database_ = true;
 		parameters->use_secret_chats_ = true;

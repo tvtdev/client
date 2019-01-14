@@ -22,10 +22,9 @@ int main(int argc, char *argv[]) {
 #ifdef LOG_FILE
 	qInstallMessageHandler(loggerOutput);
 #endif // _RELEASE
-//	QTextStream tin(stdin);
-//	QString dbPassword="123123", phoneNumber="+8618980505174", firstName="hu", lastName="mm";
-  //      std::cerr << "Input SQLITE db password:";
-//	tin >> dbPassword;
+	QTextStream tin(stdin);
+	QString phoneNumber="";
+	tin>>phoneNumber;
 //	std::cerr <<"Input phone number(include +):";
 //	tin >> phoneNumber;
 //	std::cerr <<"Input first name:";
@@ -34,6 +33,7 @@ int main(int argc, char *argv[]) {
 //	tin >> lastName;
 	CmdThread cmdThread;
 	TelegramThread tgThread;
+	tgThread.phoneNumber= phoneNumber;
 	QObject::connect(&tgThread, &TelegramThread::authSuccess, [&]() {
 		cmdThread.start();
 	});

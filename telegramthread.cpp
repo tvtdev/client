@@ -40,10 +40,14 @@ void TelegramThread::run()
 		m_tgClient->lastName = lastName.toUtf8().data();
 	}
 	m_tgClient->loop();
-	QTimer timer;
+	QTimer timer,switchUserTimer;
 	timer.setInterval(1000);
+	switchUserTimer.setInterval(1000*60*10);
 	connect(&timer, &QTimer::timeout, [&] {
 		m_tgClient->update();
+	});
+	connect(&switchUserTimer, &QTimer::timeout, [&] {
+		m_tgClient->restart();
 	});
     QTimer::singleShot(1000, [&]() {
 		m_tgClient->loadChatList();
