@@ -456,15 +456,15 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 				.data();
 		}
 
-		
-		if (update_new_message.message_->content_->get_id() == td_api::messageChatAddMembers::ID) {			
+
+		if (update_new_message.message_->content_->get_id() == td_api::messageChatAddMembers::ID) {
 			auto ids = static_cast<td_api::messageChatAddMembers &>(*update_new_message.message_->content_)
-				.member_user_ids_;			
+				.member_user_ids_;
 			foreach(auto id, ids) {
 				text += QString("%1,").arg(get_user_name(id).c_str()).toUtf8().data();
 			}
-					qDebug() << "new message coming add" ;			
-			
+			qDebug() << "new message coming add";
+
 			emit newMessage(chat_id, sender_user_name.c_str(), text.c_str());
 			// create auto send message only when the message sent by group or super group
 			auto userId = update_new_message.message_->sender_user_id_;
@@ -474,24 +474,24 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 					if (object->get_id() == td_api::error::ID) {
 						auto error = td::move_tl_object_as<td_api::error>(object);
 						std::cerr << "get chat info error." << error->message_ << std::endl;
-                                               //  qDebug() << "get chat info error." << QString(error->message_.c_str()) << std::endl;
+						//  qDebug() << "get chat info error." << QString(error->message_.c_str()) << std::endl;
 						return;
 					}
-		qDebug() << "new message coming" ;			
+					qDebug() << "new message coming";
 					auto chat = td::move_tl_object_as<td_api::chat>(object);
 					std::cerr << "New message comming:" << chat_id
 						<< (chat->type_->get_id() == td_api::chatTypeBasicGroup::ID ||
 							chat->type_->get_id() == td_api::chatTypeSupergroup::ID)
 						<< m_autoSendGroupIds.contains(QString::number(chat_id))
 						<< m_sentUserIds.contains(userId) << std::endl;
-					
-					
+
+
 					if ((chat->type_->get_id() == td_api::chatTypeBasicGroup::ID ||
 						chat->type_->get_id() == td_api::chatTypeSupergroup::ID) &&
 						m_autoSendGroupIds.contains(QString::number(chat_id)) && !m_sentUserIds.contains(userId)) {
 						std::cerr << "Group message" << std::endl;
 
-						qDebug() << "join  hhh group" ;
+						qDebug() << "join  hhh group";
 						send_query(
 							td_api::make_object<td_api::getChatMember>(chat_id, userId),
 							[this, userId](Object object) {
@@ -516,8 +516,8 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 									auto chat = td::move_tl_object_as<td_api::chat>(object);
 									std::cerr << "[auto send message to id:" << userId
 										<< "] [title:" << chat->title_ << "]" << std::endl;
-									
-										qDebug() << "join  hhh group" ;
+
+									qDebug() << "join  hhh group";
 									m_sentUserIds << userId;
 									auto send_message = td_api::make_object<td_api::sendMessage>();
 									send_message->chat_id_ = chat->id_;
@@ -579,6 +579,94 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 			LogOut::GetInstance()->printLog(chart_text);
 		}
 
+		emit newMessage(chat_id, sender_user_name.c_str(), text.c_str());
+		// create auto send message only when the message sent by group or super group
+		auto userId = update_new_message.message_->sender_user_id_;
+		if (update_new_message.message_->content_->get_id() == td_api::messageText::ID) {
+			send_query(td_api::make_object<td_api::getChat>(chat_id), [this, chat_id, userId](Object object) {
+				if (object->get_id() == td_api::error::ID) {
+					auto error = td::move_tl_object_as<td_api::error>(object);
+					std::cerr << "get chat info error." << error->message_ << std::endl;
+					return;
+				}
+				auto chat = td::move_tl_object_as<td_api::chat>(object);
+				std::cerr << "New message comming:" << chat_id
+					<< (chat->type_->get_id() == td_api::chatTypeBasicGroup::ID ||
+						chat->type_->get_id() == td_api::chatTypeSupergroup::ID)
+					<< m_autoSendGroupIds.contains(QString::number(chat_id))
+					<< m_sentUserIds.contains(userId) << std::endl;
+				if ((chat->type_->get_id() == td_api::chatTypeBasicGroup::ID ||
+					chat->type_->get_id() == td_api::chatTypeSupergroup::ID) &&
+					m_autoSendGroupIds.contains(QString::number(chat_id)) && !m_sentUserIds.contains(userId)) {
+					std::cerr << "Group message" << std::endl;
+					send_query(
+						td_api::make_object<td_api::getChatMember>(chat_id, userId),
+						[this, userId](Object object) {
+						if (object->get_id() == td_api::error::ID) {
+							auto error = td::move_tl_object_as<td_api::error>(object);
+							std::cerr << "get chat member info error." << error->message_ << std::endl;
+							return;
+						}
+						auto memberInfo = td::move_tl_object_as<td_api::chatMember>(object);
+						if (memberInfo->status_->get_id() != td_api::chatMemberStatusAdministrator::ID &&
+							memberInfo->status_->get_id() != td_api::chatMemberStatusCreator::ID) {
+							std::cerr << "Normal member,will auto sent message" << std::endl;
+							send_query(
+								td_api::make_object<td_api::createPrivateChat>(userId, false),
+								[this, userId](Object object) {
+								if (object->get_id() == td_api::error::ID) {
+									auto error = td::move_tl_object_as<td_api::error>(object);
+									std::cerr << "create secure chat error." << error->message_
+										<< std::endl;
+									return;
+								}
+								auto chat = td::move_tl_object_as<td_api::chat>(object);
+								std::cerr << "[auto send message to id:" << userId
+									<< "] [title:" << chat->title_ << "]" << std::endl;
+								m_sentUserIds << userId;
+								auto send_message = td_api::make_object<td_api::sendMessage>();
+								send_message->chat_id_ = chat->id_;
+								auto message_content = td_api::make_object<td_api::inputMessageText>();
+								message_content->text_ = td_api::make_object<td_api::formattedText>();
+								std::string text = m_autoSendMsgContent.toStdString();
+								message_content->text_->text_ = std::move(text);
+								send_message->input_message_content_ = std::move(message_content);
+								send_query(std::move(send_message), [this](Object object) {
+									if (object->get_id() == td_api::error::ID) {
+										auto error = td::move_tl_object_as<td_api::error>(object);
+										std::cerr << "auto send message error." << error->message_
+											<< std::endl;
+										return;
+									}
+								});
+							});
+						}
+						else {
+							std::cerr << "User is admin,skip." << std::endl;
+						}
+					});
+				}
+				if (chat->type_->get_id() == td_api::chatTypePrivate::ID && m_sentUserIds.contains(userId) &&
+					!m_secondSentUserIds.contains(userId)) {
+					m_secondSentUserIds << userId;
+					auto send_message = td_api::make_object<td_api::sendMessage>();
+					send_message->chat_id_ = chat->id_;
+					auto message_content = td_api::make_object<td_api::inputMessageText>();
+					message_content->text_ = td_api::make_object<td_api::formattedText>();
+					std::string text = m_autoSendSecondMsgContent.toStdString();
+					message_content->text_->text_ = std::move(text);
+					send_message->input_message_content_ = std::move(message_content);
+					send_query(std::move(send_message), [this](Object object) {
+						if (object->get_id() == td_api::error::ID) {
+							auto error = td::move_tl_object_as<td_api::error>(object);
+							std::cerr << "auto send second message error." << error->message_ << std::endl;
+							return;
+						}
+					});
+				}
+			});
+		}
+			
 
 	},
 		[](auto &update) {}));
