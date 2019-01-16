@@ -112,7 +112,8 @@ class TdClient : public QObject
 
     void initMtProxy();
 
-    void sendMessage(std::int64_t chat_id, std::string text, Handler handler);
+    void sendMessageWithHandler(std::int64_t chat_id, std::string text, Handler handler);
+
   private:
     void update_send();
     void joinchart(const QString temptext);

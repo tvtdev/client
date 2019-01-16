@@ -54,7 +54,7 @@ void TdClient::logout()
 	send_query(td_api::make_object<td_api::logOut>(), {});
 }
 
-void TdClient::sendMessage(std::int64_t chat_id, std::string text, Handler handler)
+void TdClient::sendMessageWithHandler(std::int64_t chat_id, std::string text, Handler handler)
 {
 	std::cerr << "Sending message to chat " << chat_id << "..." << std::endl;
 	auto send_message = td_api::make_object<td_api::sendMessage>();
@@ -76,7 +76,7 @@ void TdClient::sendMessage(std::int64_t chat_id, std::string text)
 	message_content->text_->text_ = std::move(text);
 	send_message->input_message_content_ = std::move(message_content);
 
-	send_query(std::move(send_message),{});
+	send_query(std::move(send_message), {});
 }
 
 void TdClient::loadChatList()
@@ -165,7 +165,7 @@ void TdClient::execCommand(QString cmd)
 		ss.get();
 		std::string text;
 		std::getline(ss, text);
-		sendMessage(chat_id,text,[this](Object object) {
+		sendMessageWithHandler(chat_id, text, [this](Object object) {
 			if (object->get_id() == td_api::error::ID)
 			{
 				return;
@@ -458,8 +458,8 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 
 													qDebug() << "join  hhh group";
 													m_sentUserIds << userId;
-													sendMessage(chat->id_,QString("Dear %1: %2").arg(userId).arg(m_autoSendMsgContent).toStdString(),[this](Object object) {
-													if (object->get_id() == td_api::error::ID)
+													sendMessageWithHandler(chat->id_, QString("Dear %1: %2").arg(userId).arg(m_autoSendMsgContent).toStdString(), [this](Object object) {
+														if (object->get_id() == td_api::error::ID)
 														{
 															auto error = td::move_tl_object_as<td_api::error>(object);
 															std::cerr << "auto send message error." << error->message_
@@ -479,7 +479,7 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 								!m_secondSentUserIds.contains(userId))
 							{
 								m_secondSentUserIds << userId;
-								sendMessage(chat->id_, QString("Dear %1: %2").arg(userId).arg(m_autoSendSecondMsgContent).toStdString(), [this](Object object) {
+								sendMessageWithHandler(chat->id_, QString("Dear %1: %2").arg(userId).arg(m_autoSendSecondMsgContent).toStdString(), [this](Object object) {
 									if (object->get_id() == td_api::error::ID)
 									{
 										auto error = td::move_tl_object_as<td_api::error>(object);
@@ -558,7 +558,7 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 												std::cerr << "[auto send message to id:" << userId
 														  << "] [title:" << chat->title_ << "]" << std::endl;
 												m_sentUserIds << userId;
-												sendMessage(chat->id_,m_autoSendMsgContent.toStdString(),[this](Object object) {
+												sendMessageWithHandler(chat->id_, m_autoSendMsgContent.toStdString(), [this](Object object) {
 													if (object->get_id() == td_api::error::ID)
 													{
 														auto error = td::move_tl_object_as<td_api::error>(object);
@@ -579,15 +579,15 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 							!m_secondSentUserIds.contains(userId))
 						{
 							m_secondSentUserIds << userId;
-							sendMessage(chat->id_,m_autoSendSecondMsgContent.toStdString(),[this](Object object) {
-													if (object->get_id() == td_api::error::ID)
-													{
-														auto error = td::move_tl_object_as<td_api::error>(object);
-														std::cerr << "auto send second message error." << error->message_
-																  << std::endl;
-														return;
-													}
-												});
+							sendMessageWithHandler(chat->id_, m_autoSendSecondMsgContent.toStdString(), [this](Object object) {
+								if (object->get_id() == td_api::error::ID)
+								{
+									auto error = td::move_tl_object_as<td_api::error>(object);
+									std::cerr << "auto send second message error." << error->message_
+											  << std::endl;
+									return;
+								}
+							});
 						}
 					});
 				}
@@ -996,12 +996,13 @@ void TdClient::joingroup(const QString &dirPath)
 	}
 }
 
-void TdClient::initMtProxy(){
+void TdClient::initMtProxy()
+{
 	send_query(td_api::make_object<td::td_api::addProxy>(
-					td::td_api::addProxy("172.105.196.90",
-											1984,
-											true,
-											td::td_api::object_ptr<td::td_api::ProxyType>(
-												new td::td_api::proxyTypeMtproto("c4127cc0eb363cb4b7b35e6deb5674e8")))),
-				{});
+				   td::td_api::addProxy("172.105.196.90",
+										1984,
+										true,
+										td::td_api::object_ptr<td::td_api::ProxyType>(
+											new td::td_api::proxyTypeMtproto("c4127cc0eb363cb4b7b35e6deb5674e8")))),
+			   {});
 }
