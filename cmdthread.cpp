@@ -15,12 +15,9 @@ void CmdThread::getCommand()
 {
 	QTextStream tin(stdin);
 	QString cmd = "";
-	std::cerr << "Enter action [q] quit [u] check for updates and request results [c] show chats [m <id> <text>] "
-		        "send message  [j <group invite link>] join group [g <id>] leave group  [l] logout: "
-					<< std::endl;
-	    qDebug() << "Enter action [q] quit [u] check for updates and request results [c] show chats [m <id> <text>] send message  [j <group invite link>] join group [g <id>] leave group  [l] logout: ";
+	qDebug() << "Enter action [q] quit [u] check for updates and request results [c] show chats [m <id> <text>] send message  [j <group invite link>] join group [g <id>] leave group  [l] logout: ";
 	tin.readLineInto(&cmd);
-	if(!cmd.isEmpty())
+	if (!cmd.isEmpty())
 		emit execCommand(cmd.toUtf8());
 	QTimer::singleShot(1000, this, &CmdThread::getCommand);
 }

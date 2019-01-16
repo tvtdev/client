@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	qInstallMessageHandler(loggerOutput);
 	QString phoneNumber = "";
 	QCommandLineParser cmdParser;
-	QCommandLineOption phoneOpt("phone");
+	QCommandLineOption phoneOpt("p");
 	cmdParser.addOption(phoneOpt);
 	cmdParser.process(a);
 	phoneNumber = cmdParser.value(phoneOpt);
