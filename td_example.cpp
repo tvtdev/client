@@ -28,14 +28,18 @@ int main(int argc, char *argv[])
 	QString phoneNumber = "";
 	QCommandLineParser cmdParser;
 	QCommandLineOption phoneOpt("p");
+	phoneOpt.setValueName("phone");
 	cmdParser.addOption(phoneOpt);
 	cmdParser.process(a);
 	phoneNumber = cmdParser.value(phoneOpt);
 	if (phoneNumber.isEmpty())
 	{
 		//input phone number when no -phone arg specified
+		qDebug()<<"Input phone number with +:";
 		QTextStream tin(stdin);
 		tin >> phoneNumber;
+	}else{
+		qDebug()<<"Phone number:"<<phoneNumber;
 	}
 	CmdThread cmdThread;
 	TelegramThread tgThread;
