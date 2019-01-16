@@ -9,3 +9,7 @@ TdTest
 *.log
 *.o
 moc_*
+td
+.vscode
+moc_*
+*.filters
