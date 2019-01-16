@@ -13,3 +13,4 @@ td
 .vscode
 moc_*
 *.filters
+Makefile
