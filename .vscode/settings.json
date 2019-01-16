@@ -12,7 +12,7 @@
         "iosfwd": "cpp",
         "xstring": "cpp",
         "xutility": "cpp",
-        "qtextstream": "cpp"
+        "functional": "cpp"
     },
     "cppcheck.includePaths": [
         "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",

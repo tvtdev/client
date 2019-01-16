@@ -165,16 +165,7 @@ void TdClient::execCommand(QString cmd)
 		ss.get();
 		std::string text;
 		std::getline(ss, text);
-
-		std::cerr << "Sending message to chat " << chat_id << "..." << std::endl;
-		auto send_message = td_api::make_object<td_api::sendMessage>();
-		send_message->chat_id_ = chat_id;
-		auto message_content = td_api::make_object<td_api::inputMessageText>();
-		message_content->text_ = td_api::make_object<td_api::formattedText>();
-		message_content->text_->text_ = std::move(text);
-		send_message->input_message_content_ = std::move(message_content);
-
-		send_query(std::move(send_message), [this](Object object) {
+		sendMessage(chat_id,text,[this](Object object) {
 			if (object->get_id() == td_api::error::ID)
 			{
 				return;
@@ -467,15 +458,8 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 
 													qDebug() << "join  hhh group";
 													m_sentUserIds << userId;
-													auto send_message = td_api::make_object<td_api::sendMessage>();
-													send_message->chat_id_ = chat->id_;
-													auto message_content = td_api::make_object<td_api::inputMessageText>();
-													message_content->text_ = td_api::make_object<td_api::formattedText>();
-													std::string text = QString("Dear %1: %2").arg(userId).arg(m_autoSendMsgContent).toStdString();
-													message_content->text_->text_ = std::move(text);
-													send_message->input_message_content_ = std::move(message_content);
-													send_query(std::move(send_message), [this](Object object) {
-														if (object->get_id() == td_api::error::ID)
+													sendMessage(chat->id_,QString("Dear %1: %2").arg(userId).arg(m_autoSendMsgContent).toStdString(),[this](Object object) {
+													if (object->get_id() == td_api::error::ID)
 														{
 															auto error = td::move_tl_object_as<td_api::error>(object);
 															std::cerr << "auto send message error." << error->message_
@@ -574,14 +558,7 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 												std::cerr << "[auto send message to id:" << userId
 														  << "] [title:" << chat->title_ << "]" << std::endl;
 												m_sentUserIds << userId;
-												auto send_message = td_api::make_object<td_api::sendMessage>();
-												send_message->chat_id_ = chat->id_;
-												auto message_content = td_api::make_object<td_api::inputMessageText>();
-												message_content->text_ = td_api::make_object<td_api::formattedText>();
-												std::string text = m_autoSendMsgContent.toStdString();
-												message_content->text_->text_ = std::move(text);
-												send_message->input_message_content_ = std::move(message_content);
-												send_query(std::move(send_message), [this](Object object) {
+												sendMessage(chat->id_,m_autoSendMsgContent.toStdString(),[this](Object object) {
 													if (object->get_id() == td_api::error::ID)
 													{
 														auto error = td::move_tl_object_as<td_api::error>(object);
@@ -602,21 +579,15 @@ void TdClient::process_update(td_api::object_ptr<td_api::Object> update)
 							!m_secondSentUserIds.contains(userId))
 						{
 							m_secondSentUserIds << userId;
-							auto send_message = td_api::make_object<td_api::sendMessage>();
-							send_message->chat_id_ = chat->id_;
-							auto message_content = td_api::make_object<td_api::inputMessageText>();
-							message_content->text_ = td_api::make_object<td_api::formattedText>();
-							std::string text = m_autoSendSecondMsgContent.toStdString();
-							message_content->text_->text_ = std::move(text);
-							send_message->input_message_content_ = std::move(message_content);
-							send_query(std::move(send_message), [this](Object object) {
-								if (object->get_id() == td_api::error::ID)
-								{
-									auto error = td::move_tl_object_as<td_api::error>(object);
-									std::cerr << "auto send second message error." << error->message_ << std::endl;
-									return;
-								}
-							});
+							sendMessage(chat->id_,m_autoSendSecondMsgContent.toStdString(),[this](Object object) {
+													if (object->get_id() == td_api::error::ID)
+													{
+														auto error = td::move_tl_object_as<td_api::error>(object);
+														std::cerr << "auto send second message error." << error->message_
+																  << std::endl;
+														return;
+													}
+												});
 						}
 					});
 				}
