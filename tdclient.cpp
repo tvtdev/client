@@ -66,6 +66,18 @@ void TdClient::sendMessage(std::int64_t chat_id, std::string text, Handler handl
 
 	send_query(std::move(send_message), handler);
 }
+void TdClient::sendMessage(std::int64_t chat_id, std::string text)
+{
+	std::cerr << "Sending message to chat " << chat_id << "..." << std::endl;
+	auto send_message = td_api::make_object<td_api::sendMessage>();
+	send_message->chat_id_ = chat_id;
+	auto message_content = td_api::make_object<td_api::inputMessageText>();
+	message_content->text_ = td_api::make_object<td_api::formattedText>();
+	message_content->text_->text_ = std::move(text);
+	send_message->input_message_content_ = std::move(message_content);
+
+	send_query(std::move(send_message),{});
+}
 
 void TdClient::loadChatList()
 {

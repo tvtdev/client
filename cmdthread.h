@@ -5,13 +5,6 @@
 #include <QTextStream>
 #include <QTimer>
 
-#include <td/telegram/Client.h>
-#include <td/telegram/Log.h>
-#include <td/telegram/td_api.h>
-#include <td/telegram/td_api.hpp>
-namespace td_api = td::td_api;
-using Object = td_api::object_ptr<td_api::Object>;
-using Handler = std::function<void(Object)>;
 class CmdThread : public QThread
 {
 	Q_OBJECT
@@ -20,7 +13,7 @@ class CmdThread : public QThread
 	CmdThread(QObject *parent = nullptr);
 	~CmdThread();
   signals:
-	void execCommand(QString command,Handler handler={});
+	void execCommand(QString command);
   public slots:
 	void getCommand();
 
