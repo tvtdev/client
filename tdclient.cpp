@@ -617,7 +617,6 @@ void TdClient::on_authorization_state_update()
 				std::cerr << "Got authorization" << std::endl;
 				if (!m_allLocalUsers.contains(QString(phoneNumber.c_str())))
 				{
-					m_ini.setValue("USERS", m_allLocalUsers.join("|"));
 					if (m_currentUserIndex == -1)
 					{
 						m_allLocalUsers.push_front(QString(phoneNumber.c_str()));
@@ -628,6 +627,7 @@ void TdClient::on_authorization_state_update()
 						m_allLocalUsers << QString(phoneNumber.c_str());
 						m_currentUserIndex = m_allLocalUsers.count() - 1;
 					}
+					m_ini.setValue("USERS", m_allLocalUsers.join("|"));
 				}
 				else
 				{
